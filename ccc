@@ -9,8 +9,62 @@ local Services = setmetatable({}, {
 _G.tpmode = true
 _G.asell = false
 _G.smerchant = nil
+_G.espisonade = false
 
 --Functions
+
+local function Espisonade()
+	local player = game.Players.LocalPlayer
+	local notifiedIsonades = {}
+	local isonades = workspace:FindFirstChild("zones")
+ 
+	while _G.espisonade do
+	   if isonades and isonades:FindFirstChild("fishing") then
+		  for _, isonade in pairs(isonades.fishing:GetChildren()) do
+			 if isonade.Name == "Isonade" and not isonade:FindFirstChild("BillboardGui") then
+				local billboardGui = Instance.new("BillboardGui")
+				local textLabel = Instance.new("TextLabel")
+ 
+				billboardGui.Adornee = isonade
+				billboardGui.Size = UDim2.new(0, 150, 0, 40)
+				billboardGui.StudsOffset = Vector3.new(0, 110, 0)
+				billboardGui.AlwaysOnTop = true
+				textLabel.Parent = billboardGui
+				textLabel.Size = UDim2.new(1, 0, 1, 0)
+				textLabel.BackgroundTransparency = 1
+				textLabel.TextColor3 = Color3.fromRGB(200, 100, 150)
+				textLabel.TextScaled = false
+				textLabel.TextSize = 14
+				textLabel.Font = Enum.Font.FredokaOne
+				textLabel.Text = "Isonade"
+				billboardGui.Parent = isonade
+ 
+				local position = isonade.Position
+				local coords = string.format("X: %.2f, Y: %.2f, Z: %.2f", position.X, position.Y, position.Z)
+ 
+				if not notifiedIsonades[isonade] then
+				   Rayfield:Notify({
+					  Title = "🎊 Event",
+					  Content = "Isonade zone at " .. coords,
+					  Duration = 3,
+					  Image = "flag",
+				   })
+				   notifiedIsonades[isonade] = true
+				end
+			 end
+		  end
+	   end
+	   task.wait(1)
+	end
+end
+ 
+local function DelEspisonade()
+	for _, isonade in pairs(workspace:FindFirstChild("zones").fishing:GetChildren()) do
+	   if isonade:FindFirstChild("BillboardGui") then
+		  isonade.BillboardGui:Destroy()
+	   end
+	end
+end
 
 local function NoclipFunction()
 	task.wait()
@@ -433,6 +487,8 @@ do
                 _G.smerchant = "Matt Merchant"
             elseif Options1 == "Max" then
                 _G.smerchant = "Max Merchant"
+			elseif Options1 == "Mann" then
+                _G.smerchant = "Mann Merchant"
             elseif Options1 == "Mike" then
                 _G.smerchant = "Mike Merchant"
             elseif Options1 == "Cort" then
@@ -443,8 +499,6 @@ do
                 _G.smerchant = "Mel Merchant"
             elseif Options1 == "Marc (The Depths)" then
                 _G.smerchant = "The Depth Merchant"
-            elseif Options1 == "Mann" then
-                _G.smerchant = "Mann Merchant"
             end
         end})
 
@@ -926,6 +980,18 @@ do
 			end
         end})
 
+		Section:Toggle({Name = "Night Vision", Callback = function(Value)
+            if Value then
+				if game:GetService("Lighting"):FindFirstChild("Sky") then
+					game:GetService("Lighting"):FindFirstChild("Sky").Parent = game:GetService("Lighting").bloom
+				end
+			else
+				if game:GetService("Lighting").bloom:FindFirstChild("Sky") then
+					game:GetService("Lighting").bloom:FindFirstChild("Sky").Parent = game:GetService("Lighting")
+				end
+			end
+        end})
+
 		Section:Toggle({Name = "Noclip", Callback = function(ToggleState)
             NoclipEnabled = ToggleState
             while NoclipEnabled do
@@ -936,6 +1002,15 @@ do
                 if part:IsA("BasePart") and part.CanCollide == false then
                     part.CanCollide = true
                 end
+            end
+        end})
+
+		Section:Toggle({Name = "ESP Isonade", Callback = function(espisonadeV)
+            _G.espisonade = espisonadeV
+            if _G.espisonade then
+                Espisonade()
+            else
+                DelEspisonade()
             end
         end})
 
