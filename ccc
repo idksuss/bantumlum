@@ -514,6 +514,26 @@ do
 		Section:Label({Name = "Talk to Merlin before using auto luck."})
     end
 
+	do -- Codes
+		local Section = Pages["Aiming"]:Section({Name = "Codes"})
+
+		local x2Code = {
+			"RFG",
+			"NorthernExpedition",
+			"MERRYFISCHMAS"
+		 }
+
+		Section:Button({Name = "Redeem All Codes", Callback = function()
+			function RedeemCode(value)
+				game:GetService("ReplicatedStorage").events.runcode:FireServer(value)
+			end
+			for i,v in pairs(x2Code) do
+				RedeemCode(v)
+			end
+			Notifications:Notification("🟢 Redeemed All Codes | Skull Hub", 10, Library.Accent, false)
+		end})
+	end
+
     do
 		if (not Solara) and (not Xeno) and (not Seliware) and (not Awp) then
 			local Section = Pages["Aiming"]:Section({Name = "Waypoints"})
