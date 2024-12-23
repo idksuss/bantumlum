@@ -1000,6 +1000,24 @@ do
 			end
         end})
 
+		Section:Toggle({Name = "Disable Oxygen (Peaks)", Callback = function(Apeaks)
+            for _, player in pairs(game.Players:GetPlayers()) do
+				local oxygenp = player.Character and player.Character:FindFirstChild("client") and player.Character.client:FindFirstChild("oxygen(peaks)")
+				if oxygenp then
+				   oxygenp.Enabled = not Apeaks
+				end
+			end
+        end})
+
+		Section:Toggle({Name = "Disable Temperature", Callback = function(Atemperature)
+            for _, player in pairs(game.Players:GetPlayers()) do
+				local Temperature = player.Character and player.Character:FindFirstChild("client") and player.Character.client:FindFirstChild("temperature")
+				if Temperature then
+				   Temperature.Enabled = not Atemperature
+				end
+			end
+        end})
+
 		Section:Toggle({Name = "Night Vision", Callback = function(Value)
             if Value then
 				if game:GetService("Lighting"):FindFirstChild("Sky") then
