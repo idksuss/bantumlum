@@ -1,391 +1,126 @@
---Load library
-local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
-
---Create Main Window
-local Window = Rayfield:CreateWindow({
-   Name = "Skull Hub - [🐟] Fisch",
-   LoadingTitle = "Skull Hub",
-   LoadingSubtitle = "by hungquan99",
-   Theme = "Default",
-   DisableRayfieldPrompts = false,
-   DisableBuildWarnings = false,
-
-   ConfigurationSaving = {
-      Enabled = true,
-      FolderName = "Skull Hub",
-      FileName = "Fisch"
-   },
-
-   Discord = {
-      Enabled = true, -- Prompt the user to join your Discord server if their executor supports it
-      Invite = "NxHT2rSynR", -- The Discord invite code, do not include discord.gg/. E.g. discord.gg/ABCD would be ABCD
-      RememberJoins = false -- Set this to false to make them join the discord every time they load it up
-   },
-      
-   KeySystem = false,
-   KeySettings = {
-      Title = "Skull Hub",
-      Subtitle = "🔑 Key System",
-      Note = "Join discord https://discord.gg/NxHT2rSynR to get key.",
-      Key = {"hungquan99"}
-   }
+if getgenv().ScriptLoaded then return end ; getgenv().ScriptLoaded = true;
+local Services = setmetatable({}, {
+    __index = function(table, value, key)
+        return (cloneref and cloneref(game:GetService(value))) or game:GetService(value)
+    end
 })
 
---Services
-local GuiService = game:GetService("GuiService")
-local VirtualInputManager = game:GetService("VirtualInputManager")
-local Players = game:GetService("Players")
-local RunService = game:GetService("RunService")
-
 --Values
-_G.acast = false
-_G.ashake = false
-_G.areel = false
-_G.freezep = false
-_G.asell = false
-_G.asellinhand = false
-
-_G.areelmode = false
-_G.ashakemode = true
-_G.ashakespeed = true
-_G.acastmode = true
 _G.tpmode = true
+_G.asell = false
 _G.smerchant = nil
-
-_G.plspeed = 16
-_G.pljump = 50
-
 _G.espisonade = false
 
-_G.apprselectedfisch = nil
-_G.aappr = false
-_G.apprweight = nil
-_G.apprmutation = nil
-_G.apprshiny = false
-_G.apprsparkling = false
-_G.apprbig = false
-_G.apprgiant = false
-
 --Functions
-local function autoRepairMap()
-   local p = game.Players.LocalPlayer
-   local backpack = p:WaitForChild("Backpack")
-   p.Character:SetPrimaryPartCFrame(CFrame.new(-2825.247314453125, 214.4886016845703, 1517.263427734375))
-   wait(1)
-   local npc = game.Workspace.world.npcs:FindFirstChild("Jack Marrow")
-   if npc then
-       local treasureScript = npc:FindFirstChild("treasure")
-       if treasureScript then
-           local repairMap = treasureScript:FindFirstChild("repairmap")
-           if repairMap and repairMap:IsA("RemoteFunction") then
-               for _, item in pairs(backpack:GetChildren()) do
-                   if item.Name == "Treasure Map" then
-                       item.Parent = p.Character
-                       wait(0.5)
-                       repairMap:InvokeServer(item)
-                       item.Parent = backpack
-                       wait(0.5)
-                   end
-               end
-           else
-               warn("repairmap RemoteFunction not found")
-           end
-       else
-           warn("treasure script not found")
-       end
-   else
-       warn("Jack Marrow NPC not found")
-   end
+
+local function Espisonade()
+	local player = game.Players.LocalPlayer
+	local notifiedIsonades = {}
+	local isonades = workspace:FindFirstChild("zones")
+ 
+	while _G.espisonade do
+	   if isonades and isonades:FindFirstChild("fishing") then
+		  for _, isonade in pairs(isonades.fishing:GetChildren()) do
+			 if isonade.Name == "Isonade" and not isonade:FindFirstChild("BillboardGui") then
+				local billboardGui = Instance.new("BillboardGui")
+				local textLabel = Instance.new("TextLabel")
+ 
+				billboardGui.Adornee = isonade
+				billboardGui.Size = UDim2.new(0, 150, 0, 40)
+				billboardGui.StudsOffset = Vector3.new(0, 110, 0)
+				billboardGui.AlwaysOnTop = true
+				textLabel.Parent = billboardGui
+				textLabel.Size = UDim2.new(1, 0, 1, 0)
+				textLabel.BackgroundTransparency = 1
+				textLabel.TextColor3 = Color3.fromRGB(200, 100, 150)
+				textLabel.TextScaled = false
+				textLabel.TextSize = 14
+				textLabel.Font = Enum.Font.FredokaOne
+				textLabel.Text = "Isonade"
+				billboardGui.Parent = isonade
+ 
+				local position = isonade.Position
+				local coords = string.format("X: %.2f, Y: %.2f, Z: %.2f", position.X, position.Y, position.Z)
+ 
+				if not notifiedIsonades[isonade] then
+				   Rayfield:Notify({
+					  Title = "🎊 Event",
+					  Content = "Isonade zone at " .. coords,
+					  Duration = 3,
+					  Image = "flag",
+				   })
+				   notifiedIsonades[isonade] = true
+				end
+			 end
+		  end
+	   end
+	   task.wait(1)
+	end
 end
-
-
-local function openChests()
-   local p = game.Players.LocalPlayer
-   local chests = game.Workspace.world.chests:GetChildren()
-   for _, chest in pairs(chests) do
-       if chest.Name:match("^TreasureChest_") and chest:FindFirstChild("ProximityPrompt") then
-           p.Character:SetPrimaryPartCFrame(chest.CFrame)
-           wait(0.7) -- Teleport confirmation time
-           p.Character.HumanoidRootPart.Anchored = true -- Freeze character
-           fireproximityprompt(chest.ProximityPrompt) -- Trigger prompt
-           wait(0.8) -- Ensure prompt is triggered
-           p.Character.HumanoidRootPart.Anchored = false -- Unfreeze character
-       end
-   end
+ 
+local function DelEspisonade()
+	for _, isonade in pairs(workspace:FindFirstChild("zones").fishing:GetChildren()) do
+	   if isonade:FindFirstChild("BillboardGui") then
+		  isonade.BillboardGui:Destroy()
+	   end
+	end
 end
 
 local function NoclipFunction()
-   task.wait()
-   for i, v in pairs(game.Players.LocalPlayer.Character:GetDescendants()) do
-       if v:IsA("BasePart") and v.CanCollide == true then
-           v.CanCollide = false
-       end
-   end
+	task.wait()
+	for i, v in pairs(game.Players.LocalPlayer.Character:GetDescendants()) do
+		if v:IsA("BasePart") and v.CanCollide == true then
+			v.CanCollide = false
+		end
+	end
 end
 
-local function clickAndHoldCenterOfScreen()
-    local player = game:GetService("Players").LocalPlayer
-    local camera = game:GetService("Workspace").CurrentCamera
-    local screenWidth = camera.ViewportSize.X
-    local screenHeight = camera.ViewportSize.Y
-    local shakeui = player.PlayerGui:FindFirstChild("shakeui")
-    local reelui = player.PlayerGui:FindFirstChild("reel")
-
-    local centerX = screenWidth / 2
-    local centerY = screenHeight / 2
-
-    local rod = nil
-
-    if player.Character and player.Character:FindFirstChildOfClass("Tool") then
-        rod = player.Character:FindFirstChildOfClass("Tool")
-    else
-        for _, item in ipairs(player.Backpack:GetChildren()) do
-            if item.Name:find("Rod") then
-                rod = item
-                break
-            end
-        end
-    end
-
-    if rod then
-        if rod.Parent ~= player.Character then
-            rod.Parent = player.Character
-        end
-
-        if not shakeui and not reelui then
-            VirtualInputManager:SendMouseButtonEvent(centerX, centerY, 0, true, player, 0)
-            task.wait(1.5)
-            VirtualInputManager:SendMouseButtonEvent(centerX, centerY, 0, false, player, 0)
-        end
-    end
-end
-
-local function AutoCastEvent()
-   while _G.acast do
-      local player = game.Players.LocalPlayer
-      local rod = nil
-
-      if player.Character and player.Character:FindFirstChildOfClass("Tool") then
-         rod = player.Character:FindFirstChildOfClass("Tool")
-      else
-         for _, item in ipairs(player.Backpack:GetChildren()) do
-            if item.Name:find("Rod") then
-               rod = item
-               break
-            end
-         end
-      end
-
-      if rod then
-         if rod.Parent ~= player.Character then
-            rod.Parent = player.Character
-         end
-
-      local args = {
-         [1] = 100,
-         [2] = 1
-      }
-
-         if rod:FindFirstChild("events") and rod.events:FindFirstChild("cast") then
-            rod.events.cast:FireServer(unpack(args))
-         end
-      end
-      task.wait(0.5)
-   end
-end
-
-local function AutoCast()
-    while _G.acast do
-        if _G.acastmode then
-            AutoCastEvent()
-            task.wait(0.01)
-        else
-            clickAndHoldCenterOfScreen()
-            task.wait(0.01)
-        end
-    end
-end
-
-local function navigateAndClick()
-    local player = Players.LocalPlayer
-    local button = player.PlayerGui:FindFirstChild("shakeui") and player.PlayerGui.shakeui:FindFirstChild("safezone") and player.PlayerGui.shakeui.safezone:FindFirstChild("button")
-    
-    if button then
-        GuiService.SelectedObject = button
-        if GuiService.SelectedObject == button then
-            VirtualInputManager:SendKeyEvent(true, Enum.KeyCode.Return, false, nil)
-            VirtualInputManager:SendKeyEvent(false, Enum.KeyCode.Return, false, nil)
-        end
-    end
-end
-
-local function clickWithCursor()
-    local player = Players.LocalPlayer
-    local button = player.PlayerGui:FindFirstChild("shakeui") and player.PlayerGui.shakeui:FindFirstChild("safezone") and player.PlayerGui.shakeui.safezone:FindFirstChild("button")
-
-    if button then
-        local bPos = button.AbsolutePosition
-        local bSize = button.AbsoluteSize
-        local centerX = bPos.X + (bSize.X / 2) + 50
-        local centerY = bPos.Y + (bSize.Y / 2) + 50
-        VirtualInputManager:SendMouseButtonEvent(centerX, centerY, 0, true, player, 0)
-        VirtualInputManager:SendMouseButtonEvent(centerX, centerY, 0, false, player, 0)
-    end
-end
-
-local function AutoShake()
-    while _G.ashake do
-        if _G.ashakemode then
-            navigateAndClick()
-            if _G.ashakespeed then
-                task.wait(0.01)
-            else
-                task.wait(0.6)
-            end
-        else
-            clickWithCursor()
-            if _G.ashakespeed then
-                task.wait(0.01)
-            else
-                task.wait(0.6)
-            end
-        end
-    end
-end
-
-local function NormalReelGui()
-    local player = Players.LocalPlayer
-    local playerbar = player.PlayerGui:FindFirstChild("reel") and player.PlayerGui.reel:FindFirstChild("bar") and player.PlayerGui.reel.bar:FindFirstChild("playerbar")
-    
-    if playerbar then
-        playerbar.Position = UDim2.new(0.5, 0, 0.5, 0)
-        playerbar.Size = UDim2.new(1, 0, 1.3, 0)
-    end
-end
-
-local function AutoReel()
-    local args = {}
-
-    while _G.areel do
-        if _G.areelmode then
-            NormalReelGui()
-            args = {}
-        else
-            args = {
-                [1] = 100,
-                [2] = true
-            }
-        end
-
-        if #args > 0 then
-            game:GetService("ReplicatedStorage").events.reelfinished:FireServer(unpack(args))
-        end
-        task.wait(0.2)
-    end
-end
-
-local function AutoSell()
-   while _G.asell do
-      if _G.smerchant then
-         local merchant = workspace.world.npcs:FindFirstChild(_G.smerchant)
-         if merchant then
-            merchant.merchant.sellall:InvokeServer()
-         end
-      end
-      task.wait(0.1)
-   end
-end
-
-local function AutoSellInHand()
-   while _G.asellinhand do
-      if _G.smerchant then
-         local merchant = workspace.world.npcs:FindFirstChild(_G.smerchant)
-         if merchant then
-            merchant.merchant.sell:InvokeServer()
-         end
-      end
-      task.wait(0.2)
-   end
-end
-
-local function FreezePlayer()
-   local player = game.Players.LocalPlayer
-   local initialCFrame = nil
-   local humanoid = nil
-
-   while _G.freezep do
-      if player and player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
-         if not initialCFrame then
-            initialCFrame = player.Character.HumanoidRootPart.CFrame
-            humanoid = player.Character:FindFirstChildOfClass("Humanoid")
-            if humanoid then
-               humanoid.WalkSpeed = 0
-               humanoid.JumpPower = 0
-            end
-         end
-         player.Character.HumanoidRootPart.CFrame = initialCFrame
-      end
-      task.wait(0.01)
-   end
-
-   if humanoid then
-      humanoid.WalkSpeed = _G.plspeed
-      humanoid.JumpPower = _G.pljump
-   end
-end
-
-local function Espisonade()
-   local player = game.Players.LocalPlayer
-   local notifiedIsonades = {}
-   local isonades = workspace:FindFirstChild("zones")
-
-   while _G.espisonade do
-      if isonades and isonades:FindFirstChild("fishing") then
-         for _, isonade in pairs(isonades.fishing:GetChildren()) do
-            if isonade.Name == "Isonade" and not isonade:FindFirstChild("BillboardGui") then
-               local billboardGui = Instance.new("BillboardGui")
-               local textLabel = Instance.new("TextLabel")
-
-               billboardGui.Adornee = isonade
-               billboardGui.Size = UDim2.new(0, 150, 0, 40)
-               billboardGui.StudsOffset = Vector3.new(0, 110, 0)
-               billboardGui.AlwaysOnTop = true
-               textLabel.Parent = billboardGui
-               textLabel.Size = UDim2.new(1, 0, 1, 0)
-               textLabel.BackgroundTransparency = 1
-               textLabel.TextColor3 = Color3.fromRGB(200, 100, 150)
-               textLabel.TextScaled = false
-               textLabel.TextSize = 14
-               textLabel.Font = Enum.Font.FredokaOne
-               textLabel.Text = "Isonade"
-               billboardGui.Parent = isonade
-
-               local position = isonade.Position
-               local coords = string.format("X: %.2f, Y: %.2f, Z: %.2f", position.X, position.Y, position.Z)
-
-               if not notifiedIsonades[isonade] then
-                  Rayfield:Notify({
-                     Title = "🎊 Event",
-                     Content = "Isonade zone at " .. coords,
-                     Duration = 3,
-                     Image = "flag",
-                  })
-                  notifiedIsonades[isonade] = true
-               end
-            end
-         end
-      end
-      task.wait(1)
-   end
-end
-
-local function DelEspisonade()
-   for _, isonade in pairs(workspace:FindFirstChild("zones").fishing:GetChildren()) do
-      if isonade:FindFirstChild("BillboardGui") then
-         isonade.BillboardGui:Destroy()
-      end
-   end
-end
+local function autoRepairMap()
+	local p = game.Players.LocalPlayer
+	local backpack = p:WaitForChild("Backpack")
+	p.Character:SetPrimaryPartCFrame(CFrame.new(-2825.247314453125, 214.4886016845703, 1517.263427734375))
+	wait(1)
+	local npc = game.Workspace.world.npcs:FindFirstChild("Jack Marrow")
+	if npc then
+		local treasureScript = npc:FindFirstChild("treasure")
+		if treasureScript then
+			local repairMap = treasureScript:FindFirstChild("repairmap")
+			if repairMap and repairMap:IsA("RemoteFunction") then
+				for _, item in pairs(backpack:GetChildren()) do
+					if item.Name == "Treasure Map" then
+						item.Parent = p.Character
+						wait(0.5)
+						repairMap:InvokeServer(item)
+						item.Parent = backpack
+						wait(0.5)
+					end
+				end
+			else
+				warn("repairmap RemoteFunction not found | Skull Hub")
+			end
+		else
+			warn("treasure script not found | Skull Hub")
+		end
+	else
+		warn("Jack Marrow NPC not found | Skull Hub")
+	end
+ end
+ 
+ 
+ local function openChests()
+	local p = game.Players.LocalPlayer
+	local chests = game.Workspace.world.chests:GetChildren()
+	for _, chest in pairs(chests) do
+		if chest.Name:match("^TreasureChest_") and chest:FindFirstChild("ProximityPrompt") then
+			p.Character:SetPrimaryPartCFrame(chest.CFrame)
+			wait(0.7) -- Teleport confirmation time
+			p.Character.HumanoidRootPart.Anchored = true -- Freeze character
+			fireproximityprompt(chest.ProximityPrompt) -- Trigger prompt
+			wait(0.8) -- Ensure prompt is triggered
+			p.Character.HumanoidRootPart.Anchored = false -- Unfreeze character
+		end
+	end
+ end
 
 local function teleportPlayer(x, y, z)
     local player = game.Players.LocalPlayer
@@ -405,1001 +140,1019 @@ local function teleportPlayer(x, y, z)
     end
 end
 
-local function AutoAppraise()
-    local player = game:GetService("Players").LocalPlayer
-    local backpack = player:WaitForChild("Backpack")
-    local inventory = game:GetService("ReplicatedStorage"):WaitForChild("playerstats"):WaitForChild(player.Name):WaitForChild("Inventory")
+local function AutoSell()
+	while _G.asell do
+	   if _G.smerchant then
+		  local merchant = workspace.world.npcs:FindFirstChild(_G.smerchant)
+		  if merchant then
+			 merchant.merchant.sellall:InvokeServer()
+		  end
+	   end
+	   task.wait(0.1)
+	end
+end
 
-    while _G.aappr do
-        if inventory then
-            local fishList = {}
-            for _, item in pairs(inventory:GetChildren()) do
-                if #fishList < 3 then
-                    table.insert(fishList, item.Name)
-                else
-                    break
+local CanBuyLuckyPotions = false;
+local BuyingLuckyPotion = false;
+local SerpentLocation = CFrame.new();
+local Serpent_Active = false;
+local TeleportingToSerpent = false;
+local Fake_Folder = Instance.new("Folder")
+local Fake_AFK = Services.ReplicatedStorage.events.afk:Clone();
+Fake_AFK.Parent = Fake_Folder
+local Real_AFK = Services.ReplicatedStorage.events.afk;
+
+local Config = {
+    ["Farming"] = {
+        ["FishEnabled"] = false;
+        ["PositionStarted"] = CFrame.new();
+        ["TeleportToSerpent"] = false;
+        ["BuyLuckPotions"] = false;
+    };
+
+    ["Misc"] = {
+        ["ClickTeleport"] = false;
+        ["TeleportBind"] = Enum.KeyCode.LeftControl;
+    };
+
+	["Appraiser"] = {
+		["Shiny"] = false;
+		["Sparkling"] = false;
+		["Mutation"] = false;
+		["CustomWeight"] = false;
+		["Weight"] = 0;
+		["WantedMutation"] = "Random";
+	};
+
+    ["Locations"] = {["Nothern Summit"] = CFrame.new(19540, 132, 5302); ["Anicent Isles"] = CFrame.new(6058, 195, 281); ["Rod Crafting"] = CFrame.new(-3160, -747, 1701); ["The Depths"] = CFrame.new(568, -704, 1231); ["Altar"] = CFrame.new(1308, -805, -105); ["Executive HeadQuarters"] = CFrame.new(-33, -247, 200); ["Birch"] = CFrame.new(1742, 142, -2502); ["Deep"] = CFrame.new(-1511, -235, -2853); ["Volcano"] = CFrame.new(-1889, 168, 329); ["Mushgrove"] = CFrame.new(2502, 131, -721); ["Spike"] = CFrame.new(-1255, 138, 1554); ["Forsaken Shores"] = CFrame.new(-2498, 137, 1625); ["Snowcap"] = CFrame.new(2649, 142, 2521); ["Terrapin"] = CFrame.new(-145, 145, 1907); ["Arch"] = CFrame.new(999, 131, -1237); ["Merlin"] = CFrame.new(-932, 224, -987); ["Sunstone"] = CFrame.new(-933, 132, -1119); ["Wilson"] = CFrame.new(2939, 281, 2567); ["Roslit"] = CFrame.new(-1477, 134, 672); ["Brine"] = CFrame.new(-1797, -143, -3442); ["Statue"] = CFrame.new(73, 142, -1028); ["Rod Of Depths"] = CFrame.new(1704, -903, 1439); ["Deep Shop"] = CFrame.new(-979, -245, -2700); ["Vertigo"] = CFrame.new(-112, -515, 1040); ["Moosewood"] = CFrame.new(383, 135, 244);};
+};
+
+task.spawn(function()
+
+    task.spawn(function()
+        Services.UserInputService.InputBegan:Connect(function(Input , game_event)
+            if game_event then return end
+            if Input.UserInputType == Enum.UserInputType.MouseButton1 and Config.Misc.ClickTeleport and Services.UserInputService:IsKeyDown(Config.Misc.TeleportBind) then
+                local MouseLocation = Services.UserInputService:GetMouseLocation()
+                local Ray = Services.Workspace.CurrentCamera:ViewportPointToRay(MouseLocation.X, MouseLocation.Y)
+                local RaycastParams = RaycastParams.new()
+                RaycastParams.FilterType = Enum.RaycastFilterType.Blacklist
+                RaycastParams.FilterDescendantsInstances = {Services.Players.LocalPlayer.Character}
+                local Cast = Services.Workspace:Raycast(Ray.Origin, Ray.Direction * 1000, RaycastParams)
+                
+                if Cast then
+                    Services.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(Cast.Position + Vector3.new(0,3,0))
+                end
+            end;
+        end)
+    end)
+
+    task.spawn(function()
+        if Services.Workspace:FindFirstChild(string.lower("Zones")):FindFirstChild(string.lower("Fishing")):FindFirstChild("The Depths - Serpent") then
+            Serpent_Active = true
+            repeat wait() until Config.Farming.FishEnabled and Config.Farming.TeleportToSerpent
+            local Child = Services.Workspace:FindFirstChild(string.lower("Zones")):FindFirstChild(string.lower("Fishing")):FindFirstChild("The Depths - Serpent")
+            if Child.CFrame == CFrame.new(1044.93701, -750.5, 1043.96301, -1, 0, 0, 0, 1, 0, 0, 0, -1) then
+                SerpentLocation = CFrame.new(1044, -737.915894, 1061.99988, 0.994568825, 8.89683172e-09, -0.104081154, -2.41659714e-09, 1, 6.23874712e-08, 0.104081154, -6.17971097e-08, 0.994568825)
+                Serpent_Active = true;
+            end
+            if Child.CFrame == CFrame.new(845.593994, -750.5, 1238.32605, -1, 0, 0, 0, 1, 0, 0, 0, -1) then
+                SerpentLocation = CFrame.new(870.000061, -737.915894, 1244, -0.0187063329, 1.57504854e-09, 0.999825001, -2.61347619e-08, 1, -2.0642954e-09, -0.999825001, -2.6168804e-08, -0.0187063329)
+                Serpent_Active = true;
+            end
+            if Child.CFrame == CFrame.new(1414.66699, -750.5, 1251.979, -1, 0, 0, 0, 1, 0, 0, 0, -1) then
+                SerpentLocation = CFrame.new(1392.99878, -743.911743, 1255.99976, -0.113621928, -1.84039415e-08, -0.993524075, -3.34689965e-08, 1, -1.4696302e-08, 0.993524075, 3.15824309e-08, -0.113621928)
+                Serpent_Active = true;
+            end
+            if Child.CFrame == CFrame.new(1109.05005, -750.5, 1085.01404, -1, 0, 0, 0, 1, 0, 0, 0, -1) then
+                SerpentLocation = CFrame.new(1096.72095, -737.915771, 1091.03833, 0.286326379, -1.39540979e-09, -0.958132148, 4.5742901e-08, 1, 1.22133352e-08, 0.958132148, -4.73247432e-08, 0.286326379)
+                Serpent_Active = true;
+            end
+            if Child.CFrame == CFrame.new(1325.19702, -750.5, 1422.79297, -1, 0, 0, 0, 1, 0, 0, 0, -1) then
+                SerpentLocation = CFrame.new(1331.18066, -735.049805, 1438.88965, 0.999992847, -1.14245244e-08, 0.00378598436, 1.16010126e-08, 1, -4.6594387e-08, -0.00378598436, 4.66379753e-08, 0.999992847)
+                Serpent_Active = true;
+            end
+            if Child.CFrame == CFrame.new(1187.64099, -750.5, 1554.33997, -1, 0, 0, 0, 1, 0, 0, 0, -1) then
+                SerpentLocation = CFrame.new(1187.42261, -735.24408, 1571.92981, 0.999870956, -1.09965121e-08, 0.0160649568, 1.12504566e-08, 1, -1.5716946e-08, -0.0160649568, 1.58956546e-08, 0.999870956)
+                Serpent_Active = true;
+            end
+            if Child.CFrame == CFrame.new(1089.53796, -750.5, 1463.92505, -1, 0, 0, 0, 1, 0, 0, 0, -1) then
+                SerpentLocation = CFrame.new(1097.00818, -740.921997, 1446.5874, -0.963950574, 1.19874439e-08, 0.266081423, 1.29693305e-08, 1, 1.93305505e-09, -0.266081423, 5.31426725e-09, -0.963950574)
+                Serpent_Active = true;
+            end
+			if Child.CFrame == CFrame.new(915.26001, -750.5, 1414.83398, -1, 0, 0, 0, 1, 0, 0, 0, -1) then
+                SerpentLocation = CFrame.new(937.862549, -734.99707, 1411.31335, 0.109383531, 9.89878188e-08, 0.9939996, -6.568402e-08, 1, -9.23572472e-08, -0.9939996, -5.51875274e-08, 0.109383531)
+                Serpent_Active = true;
+            end
+
+            local OldCFrame = Services.Players.LocalPlayer.Character.HumanoidRootPart.CFrame
+                    
+            if Config.Farming.TeleportToSerpent then
+				TeleportingToSerpent = true
+                Services.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = SerpentLocation
+				wait(2)
+                Services.Players.LocalPlayer.Character.Humanoid:UnequipTools()
+				TeleportingToSerpent = false
+            end
+
+            local Connection;
+            Connection = Services.Workspace:FindFirstChild(string.lower("Zones")):FindFirstChild(string.lower("Fishing")).ChildRemoved:Connect(function(Child)
+                if tostring(Child) == "The Depths - Serpent" then
+                    Serpent_Active = false;
+                    
+                    if Config.Farming.TeleportToSerpent then
+						TeleportingToSerpent = true
+                        Services.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = OldCFrame
+						wait(2)
+                        Services.Players.LocalPlayer.Character.Humanoid:UnequipTools()
+						TeleportingToSerpent = false
+                    end
+                    Connection:Disconnect()
+                end
+            end)
+        end
+
+        Services.Workspace:FindFirstChild(string.lower("Zones")):FindFirstChild(string.lower("Fishing")).ChildAdded:Connect(function(Child)
+            if tostring(Child) == "The Depths - Serpent" then
+                if Child.CFrame == CFrame.new(1044.93701, -750.5, 1043.96301, -1, 0, 0, 0, 1, 0, 0, 0, -1) then
+                    SerpentLocation = CFrame.new(1044, -737.915894, 1061.99988, 0.994568825, 8.89683172e-09, -0.104081154, -2.41659714e-09, 1, 6.23874712e-08, 0.104081154, -6.17971097e-08, 0.994568825)
+                    Serpent_Active = true;
+                end
+                if Child.CFrame == CFrame.new(845.593994, -750.5, 1238.32605, -1, 0, 0, 0, 1, 0, 0, 0, -1) then
+                    SerpentLocation = CFrame.new(870.000061, -737.915894, 1244, -0.0187063329, 1.57504854e-09, 0.999825001, -2.61347619e-08, 1, -2.0642954e-09, -0.999825001, -2.6168804e-08, -0.0187063329)
+                    Serpent_Active = true;
+                end
+                if Child.CFrame == CFrame.new(1414.66699, -750.5, 1251.979, -1, 0, 0, 0, 1, 0, 0, 0, -1) then
+                    SerpentLocation = CFrame.new(1392.99878, -743.911743, 1255.99976, -0.113621928, -1.84039415e-08, -0.993524075, -3.34689965e-08, 1, -1.4696302e-08, 0.993524075, 3.15824309e-08, -0.113621928)
+                    Serpent_Active = true;
+                end
+                if Child.CFrame == CFrame.new(1109.05005, -750.5, 1085.01404, -1, 0, 0, 0, 1, 0, 0, 0, -1) then
+                    SerpentLocation = CFrame.new(1096.72095, -737.915771, 1091.03833, 0.286326379, -1.39540979e-09, -0.958132148, 4.5742901e-08, 1, 1.22133352e-08, 0.958132148, -4.73247432e-08, 0.286326379)
+                    Serpent_Active = true;
+                end
+                if Child.CFrame == CFrame.new(1325.19702, -750.5, 1422.79297, -1, 0, 0, 0, 1, 0, 0, 0, -1) then
+                    SerpentLocation = CFrame.new(1331.18066, -735.049805, 1438.88965, 0.999992847, -1.14245244e-08, 0.00378598436, 1.16010126e-08, 1, -4.6594387e-08, -0.00378598436, 4.66379753e-08, 0.999992847)
+                    Serpent_Active = true;
+                end
+                if Child.CFrame == CFrame.new(1187.64099, -750.5, 1554.33997, -1, 0, 0, 0, 1, 0, 0, 0, -1) then
+                    SerpentLocation = CFrame.new(1187.42261, -735.24408, 1571.92981, 0.999870956, -1.09965121e-08, 0.0160649568, 1.12504566e-08, 1, -1.5716946e-08, -0.0160649568, 1.58956546e-08, 0.999870956)
+                    Serpent_Active = true;
+                end
+                if Child.CFrame == CFrame.new(1089.53796, -750.5, 1463.92505, -1, 0, 0, 0, 1, 0, 0, 0, -1) then
+                    SerpentLocation = CFrame.new(1097.00818, -740.921997, 1446.5874, -0.963950574, 1.19874439e-08, 0.266081423, 1.29693305e-08, 1, 1.93305505e-09, -0.266081423, 5.31426725e-09, -0.963950574)
+                    Serpent_Active = true;
+                end
+				if Child.CFrame == CFrame.new(915.26001, -750.5, 1414.83398, -1, 0, 0, 0, 1, 0, 0, 0, -1) then
+					SerpentLocation = CFrame.new(937.862549, -734.99707, 1411.31335, 0.109383531, 9.89878188e-08, 0.9939996, -6.568402e-08, 1, -9.23572472e-08, -0.9939996, -5.51875274e-08, 0.109383531)
+					Serpent_Active = true;
+				end
+				if Child.CFrame == CFrame.new(915.26001, -750.5, 1414.83398, -1, 0, 0, 0, 1, 0, 0, 0, -1) then
+					SerpentLocation = CFrame.new(937.862549, -734.99707, 1411.31335, 0.109383531, 9.89878188e-08, 0.9939996, -6.568402e-08, 1, -9.23572472e-08, -0.9939996, -5.51875274e-08, 0.109383531)
+					Serpent_Active = true;
+				end
+
+                local OldCFrame = Services.Players.LocalPlayer.Character.HumanoidRootPart.CFrame
+                    
+                if Config.Farming.TeleportToSerpent then
+					TeleportingToSerpent = true
+                    Services.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = SerpentLocation
+					wait(2)
+                    Services.Players.LocalPlayer.Character.Humanoid:UnequipTools()
+					TeleportingToSerpent = false
+                end
+
+                local Connection;
+                Connection = Services.Workspace:FindFirstChild(string.lower("Zones")):FindFirstChild(string.lower("Fishing")).ChildRemoved:Connect(function(Child)
+                    if tostring(Child) == "The Depths - Serpent" then
+                        Serpent_Active = false;
+                        
+                        if Config.Farming.TeleportToSerpent then
+							TeleportingToSerpent = true
+                            Services.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = OldCFrame
+							wait(2)
+                            Services.Players.LocalPlayer.Character.Humanoid:UnequipTools()
+							TeleportingToSerpent = false
+                        end
+                        Connection:Disconnect()
+                    end
+                end)
+            end
+        end)
+    end)
+
+    task.spawn(function()
+        while task.wait() do
+            if Config.Farming.FishEnabled == false then continue end
+            if not Serpent_Active then continue end
+            if Config.Farming.TeleportToSerpent == false then continue end
+            if BuyingLuckyPotion then continue end
+
+            Services.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = SerpentLocation
+        end
+    end)
+
+    task.spawn(function()
+        while task.wait() do
+			if TeleportingToSerpent then continue end
+            if not Config.Farming.FishEnabled then continue end
+            if BuyingLuckyPotion then continue end
+            if (Serpent_Active and Config.Farming.TeleportToSerpent) then continue end
+            if not Services.Players.LocalPlayer.Character or not Services.Players.LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then continue end
+            Services.Players.LocalPlayer.Character:FindFirstChild("HumanoidRootPart").CFrame = Config.Farming.PositionStarted
+        end
+    end)
+
+    task.spawn(function()
+        while task.wait() do
+			if TeleportingToSerpent then continue end
+            if not Config.Farming.BuyLuckPotions then continue end
+            if not CanBuyLuckyPotions then continue end
+            if BuyingLuckyPotion then continue end
+            if not Services.Players.LocalPlayer.Character or not Services.Players.LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then continue end
+            if Services.Players.LocalPlayer.PlayerGui.hud.safezone.statuses:FindFirstChild("statusUI") then continue end
+
+            BuyingLuckyPotion = true
+            task.spawn(function()
+                task.wait(4)
+                BuyingLuckyPotion = false
+            end)
+
+            local OldCFrame = Services.Players.LocalPlayer.Character:FindFirstChild("HumanoidRootPart").CFrame
+
+            task.spawn(function()
+                repeat task.wait() Services.Players.LocalPlayer.Character:FindFirstChild("HumanoidRootPart").CFrame = Config.Locations["Merlin"] until BuyingLuckyPotion == false
+            end)
+
+            task.wait(2.5)
+            pcall(function()
+            	Services.Workspace:FindFirstChild(string.lower("World")):FindFirstChild(string.lower("NPCS")):FindFirstChild("Merlin"):FindFirstChild("Merlin"):FindFirstChild(string.lower("Luck")):InvokeServer()
+            end)
+            task.wait(0.5)
+
+            BuyingLuckyPotion = false
+
+            Services.Players.LocalPlayer.Character:FindFirstChild("HumanoidRootPart").CFrame = OldCFrame
+        end
+    end)
+
+	while task.wait() do
+		if TeleportingToSerpent then continue end
+        if not Config.Farming.FishEnabled then continue end
+        if BuyingLuckyPotion then continue end
+        if not Services.Players.LocalPlayer.Character or not Services.Players.LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then continue end
+        repeat task.wait() until BuyingLuckyPotion == false
+
+        local Rod_Value = Services.ReplicatedStorage:FindFirstChild(tostring(Services.Players.LocalPlayer), true).Stats.rod.Value
+
+		if Services.Players.LocalPlayer.Backpack:FindFirstChild(Rod_Value) then
+			Services.Players.LocalPlayer.Character.Humanoid:EquipTool(Services.Players.LocalPlayer.Backpack:FindFirstChild(Rod_Value))
+		end
+
+        CanBuyLuckyPotions = false
+		if Services.Players.LocalPlayer.Character:FindFirstChild(Rod_Value) and Services.Players.LocalPlayer.Character:FindFirstChild(Rod_Value):FindFirstChild("bobber") then
+            local Serpent_Fix = false
+            task.spawn(function()
+                task.wait(10)
+                Serpent_Fix = true
+            end)
+
+			repeat
+				pcall(function()
+					Services.Players.LocalPlayer.PlayerGui:FindFirstChild(string.lower("ShakeUI")).safezone:FindFirstChild(string.lower("Button")).Size = UDim2.new(1001, 0, 1001, 0)
+					Services.VirtualUser:Button1Down(Vector2.new(1, 1))
+					Services.VirtualUser:Button1Up(Vector2.new(1, 1))
+				end)
+				Services.RunService.Heartbeat:Wait()
+
+			until not Services.Players.LocalPlayer.Character:FindFirstChild(Rod_Value) or Services.Players.LocalPlayer.Character:FindFirstChild(Rod_Value).values.bite.Value or Serpent_Fix == true
+
+			repeat
+				Services.ReplicatedStorage:FindFirstChild(string.lower("ReelFinished"), true):FireServer(1000000000000000000000000, true)
+				Services.RunService.Heartbeat:Wait()
+
+			until not Services.Players.LocalPlayer.Character:FindFirstChild(Rod_Value) or not Services.Players.LocalPlayer.Character:FindFirstChild(Rod_Value).values.bite.Value or Serpent_Fix == true
+			if Serpent_Fix then
+				Services.Players.LocalPlayer.Character:FindFirstChild(Rod_Value):FindFirstChild(string.lower("Events")):FindFirstChild(string.lower("Cast")):FireServer(1000000000000000000000000)
+			end
+		else
+			Services.Players.LocalPlayer.Character:FindFirstChild(Rod_Value):FindFirstChild(string.lower("Events")):FindFirstChild(string.lower("Cast")):FireServer(1000000000000000000000000)
+			Services.RunService.Heartbeat:Wait()
+            CanBuyLuckyPotions = true
+		end
+	end
+end)
+
+local Library, Notifications = loadstring((request or http_request or http and http.request)({Url = "https://raw.githubusercontent.com/hungquan99/Arrayfield/main/wtfUI", Method = "GET"}).Body)()
+local Window = Library:Window({Name = "Skull Hub | Fisch [🐟]"})
+local Solara, Xeno, Seliware, Awp = getexecutorname() == "Solara", (getexecutorname() == "Xeno" or getexecutorname() == "JJSploit x Xeno"), string.match(getexecutorname(), "Seliware") == "Seliware", getexecutorname() == "AWP"
+
+if not isfolder("SkullFischPC") then
+    makefolder("SkullFischPC")
+end
+
+if not isfolder("SkullFischPC/Waypoints") then
+    makefolder("SkullFischPC/Waypoints")
+end
+
+do
+	local Pages = {
+		["Aiming"] = Window:Page({Name = "Main", Icon = "rbxassetid://6034509987"});
+		["Misc"] = Window:Page({Name = "Misc", Icon = "rbxassetid://6034509987"});
+		["Settings"] = Window:Page({Name = "Settings", Icon = "rbxassetid://6031280882"});
+	}
+
+    do
+        local Section = Pages["Aiming"]:Section({Name = "Farm"})
+
+        Section:Toggle({Name = "Auto Cast", Callback = function(state)
+            Config.Farming.FishEnabled = state
+            if Config.Farming.FishEnabled then
+                Config.Farming.PositionStarted = Services.Players.LocalPlayer.Character.HumanoidRootPart.CFrame
+            end
+        end})
+
+        Section:Toggle({Name = "Farm Ancient Serpents", Callback = function(state)
+            Config.Farming.TeleportToSerpent = state
+        end})
+
+		Section:List({Name = "Select Merchant", Flag = "SMerchant", Options = {
+			"Marc", "Matt", "Max", "Mike", 
+			"Cort", "Maverick", "Mel", "Marc (The Depths)",
+			"Mann"
+		 }, Default = 1, 
+		 Callback = function(Options1)
+            if Options1 == "Marc" then
+                _G.smerchant = "Marc Merchant"
+            elseif Options1 == "Matt" then
+                _G.smerchant = "Matt Merchant"
+            elseif Options1 == "Max" then
+                _G.smerchant = "Max Merchant"
+			elseif Options1 == "Mann" then
+                _G.smerchant = "Mann Merchant"
+            elseif Options1 == "Mike" then
+                _G.smerchant = "Mike Merchant"
+            elseif Options1 == "Cort" then
+                _G.smerchant = "Cort Merchant"
+            elseif Options1 == "Maverick" then
+                _G.smerchant = "Maverick Merchant"
+            elseif Options1 == "Mel" then
+                _G.smerchant = "Mel Merchant"
+            elseif Options1 == "Marc (The Depths)" then
+                _G.smerchant = "The Depth Merchant"
+            end
+        end})
+
+		Section:Toggle({Name = "Auto Sell All", Callback = function(AsellV)
+            _G.asell = AsellV
+            AutoSell()
+        end})
+
+        Section:Toggle({Name = "Auto Buy Luck", Callback = function(state)
+            Config.Farming.BuyLuckPotions = state
+        end})
+		
+		Section:Label({Name = "Talk to Merlin before using auto luck."})
+    end
+
+	do -- Codes
+		local Section = Pages["Aiming"]:Section({Name = "Codes"})
+
+		local x2Code = {
+			"RFG",
+			"NorthernExpedition",
+			"MERRYFISCHMAS"
+		 }
+
+		Section:Button({Name = "Redeem All Codes", Callback = function()
+			function RedeemCode(value)
+				game:GetService("ReplicatedStorage").events.runcode:FireServer(value)
+			end
+			for i,v in pairs(x2Code) do
+				RedeemCode(v)
+			end
+			Notifications:Notification("🟢 Redeemed All Codes | Skull Hub", 10, Library.Accent, false)
+		end})
+	end
+
+    do
+		if (not Solara) and (not Xeno) and (not Seliware) and (not Awp) then
+			local Section = Pages["Aiming"]:Section({Name = "Waypoints"})
+
+			local WayPointName;
+
+			local function toVector3(String, Separator)
+				local Separator = Separator or ','
+			
+				local axes = {}
+			
+				for axis in String:gmatch('[^'..Separator..']+') do
+					axes[#axes + 1] = axis
+				end
+			
+				return Vector3.new(axes[1], axes[2], axes[3])
+			end
+
+			local Selected_Waypoint;
+			local Waypoint_List = Section:List({Name = "Waypoints", Flag = "Waypoints", Options = {}, Default = 1, Callback = function(Value)
+				if Value == nil then return end
+				Selected_Waypoint = Value
+			end})
+
+			Section:Textbox({Flag = "Waypoint Name", Name = "Waypoint Name", Callback = function(Value)
+				WayPointName = tostring(Value)
+			end})
+
+			Section:Button({Name = "Teleport To Waypoint", Callback = function()
+				if Selected_Waypoint == nil then return end
+				Services.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(toVector3(readfile("SkullFischPC/Waypoints/"..Selected_Waypoint), ","))
+			end})
+
+			Section:Button({Name = "Save Waypoint", Callback = function()
+				if WayPointName == nil then return end
+				writefile("SkullFischPC/Waypoints/"..WayPointName, tostring(Services.Players.LocalPlayer.Character.HumanoidRootPart.CFrame))
+			end})
+
+			Section:Button({Name = "Delete Waypoint", Callback = function()
+				if Selected_Waypoint == nil then return end
+				delfile("SkullFischPC/Waypoints/"..Selected_Waypoint)
+			end})
+
+			Section:Button({Name = "Refresh List", Callback = function()
+				local Waypoints = {}
+		
+				for i,v in listfiles("SkullFischPC/Waypoints") do
+					local Slash = tostring(string.gsub(v, [[SkullFischPC/Waypoints\]], ""))
+					table.insert(Waypoints, Slash)
+				end
+		
+				table.sort(Waypoints, function(A, B)
+					return A<B
+				end)
+		
+				Waypoint_List:Refresh(Waypoints)
+			end})
+
+			local Waypoints = {}
+		
+			for i,v in listfiles("SkullFischPC/Waypoints") do
+				local Slash = tostring(string.gsub(v, [[SkullFischPC/Waypoints\]], ""))
+				table.insert(Waypoints, Slash)
+			end
+
+			table.sort(Waypoints, function(A, B)
+				return A<B
+			end)
+
+			Waypoint_List:Refresh(Waypoints)
+		elseif Solara then
+			local Section = Pages["Aiming"]:Section({Name = "Waypoints"})
+
+			local WayPointName;
+
+			local function toVector3(String, Separator)
+				local Separator = Separator or ','
+			
+				local axes = {}
+			
+				for axis in String:gmatch('[^'..Separator..']+') do
+					axes[#axes + 1] = axis
+				end
+			
+				return Vector3.new(axes[1], axes[2], axes[3])
+			end
+
+			local Selected_Waypoint;
+			local Waypoint_List = Section:List({Name = "Waypoints", Flag = "Waypoints", Options = {}, Default = 1, Callback = function(Value)
+				if Value == nil then return end
+				Selected_Waypoint = Value
+			end})
+
+			Section:Textbox({Flag = "Waypoint Name", Name = "Waypoint Name", Callback = function(Value)
+				WayPointName = tostring(Value)
+			end})
+
+			Section:Button({Name = "Teleport To Waypoint", Callback = function()
+				if Selected_Waypoint == nil then return end
+				Services.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(toVector3(readfile("SkullFischPC/Waypoints/"..Selected_Waypoint), ","))
+			end})
+
+			Section:Button({Name = "Save Waypoint", Callback = function()
+				if WayPointName == nil then return end
+				writefile("SkullFischPC/Waypoints/"..WayPointName, tostring(Services.Players.LocalPlayer.Character.HumanoidRootPart.CFrame))
+			end})
+
+			Section:Button({Name = "Delete Waypoint", Callback = function()
+				if Selected_Waypoint == nil then return end
+				delfile("SkullFischPC/Waypoints/"..Selected_Waypoint)
+			end})
+
+			Section:Button({Name = "Refresh List", Callback = function()
+				local Waypoints = {}
+		
+				for i,v in listfiles("SkullFischPC/Waypoints") do
+					local Slash = tostring(string.gsub(v, [[SkullFischPC/Waypoints/]], ""))
+					table.insert(Waypoints, Slash)
+				end
+		
+				table.sort(Waypoints, function(A, B)
+					return A<B
+				end)
+		
+				Waypoint_List:Refresh(Waypoints)
+			end})
+
+			local Waypoints = {}
+		
+			for i,v in listfiles("SkullFischPC/Waypoints") do
+				local Slash = tostring(string.gsub(v, [[SkullFischPC/Waypoints/]], ""))
+				table.insert(Waypoints, Slash)
+			end
+
+			table.sort(Waypoints, function(A, B)
+				return A<B
+			end)
+
+			Waypoint_List:Refresh(Waypoints)
+		elseif Seliware or Awp then
+			local Section = Pages["Aiming"]:Section({Name = "Waypoints"})
+	
+			local WayPointName;
+	
+			local function toVector3(String, Separator)
+				local Separator = Separator or ','
+			
+				local axes = {}
+			
+				for axis in String:gmatch('[^'..Separator..']+') do
+					axes[#axes + 1] = axis
+				end
+			
+				return Vector3.new(axes[1], axes[2], axes[3])
+			end
+	
+			local Selected_Waypoint;
+			local Waypoint_List = Section:List({Name = "Waypoints", Flag = "Waypoints", Options = {}, Default = 1, Callback = function(Value)
+				if Value == nil then return end
+				Selected_Waypoint = Value
+			end})
+	
+			Section:Textbox({Flag = "Waypoint Name", Name = "Waypoint Name", Callback = function(Value)
+				WayPointName = tostring(Value)
+			end})
+	
+			Section:Button({Name = "Teleport To Waypoint", Callback = function()
+				if Selected_Waypoint == nil then return end
+				Services.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(toVector3(readfile([[SkullFischPC\Waypoints\]]..Selected_Waypoint), ","))
+			end})
+	
+			Section:Button({Name = "Save Waypoint", Callback = function()
+				if WayPointName == nil then return end
+				writefile([[SkullFischPC\Waypoints\]]..WayPointName, tostring(Services.Players.LocalPlayer.Character.HumanoidRootPart.CFrame))
+			end})
+	
+			Section:Button({Name = "Delete Waypoint", Callback = function()
+				if Selected_Waypoint == nil then return end
+				delfile([[SkullFischPC\Waypoints\]]..Selected_Waypoint)
+			end})
+	
+			Section:Button({Name = "Refresh List", Callback = function()
+				local Waypoints = {}
+		
+				for i,v in listfiles([[SkullFischPC\Waypoints]]) do
+					local Slash = tostring(string.gsub(v, [[SkullFischPC\Waypoints\]], ""))
+					table.insert(Waypoints, Slash)
+				end
+		
+				table.sort(Waypoints, function(A, B)
+					return A<B
+				end)
+		
+				Waypoint_List:Refresh(Waypoints)
+			end})
+	
+			local Waypoints = {}
+		
+			for i,v in listfiles([[SkullFischPC\Waypoints]]) do
+				local Slash = tostring(string.gsub(v, [[SkullFischPC\Waypoints\]], ""))
+				table.insert(Waypoints, Slash)
+			end
+	
+			table.sort(Waypoints, function(A, B)
+				return A<B
+			end)
+	
+			Waypoint_List:Refresh(Waypoints)
+		elseif Xeno then
+			local Section = Pages["Aiming"]:Section({Name = "Waypoints"})
+
+			local WayPointName;
+
+			local function toVector3(String, Separator)
+				local Separator = Separator or ','
+			
+				local axes = {}
+			
+				for axis in String:gmatch('[^'..Separator..']+') do
+					axes[#axes + 1] = axis
+				end
+			
+				return Vector3.new(axes[1], axes[2], axes[3])
+			end
+
+			local Selected_Waypoint;
+			local Waypoint_List = Section:List({Name = "Waypoints", Flag = "Waypoints", Options = {}, Default = 1, Callback = function(Value)
+				if Value == nil then return end
+				Selected_Waypoint = Value
+			end})
+
+			Section:Textbox({Flag = "Waypoint Name", Name = "Waypoint Name", Callback = function(Value)
+				WayPointName = tostring(Value)
+			end})
+
+			Section:Button({Name = "Teleport To Waypoint", Callback = function()
+				if Selected_Waypoint == nil then return end
+				Services.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(toVector3(readfile("SkullFischPC/Waypoints/"..Selected_Waypoint), ","))
+			end})
+
+			Section:Button({Name = "Save Waypoint", Callback = function()
+				if WayPointName == nil then return end
+				writefile("SkullFischPC/Waypoints/"..WayPointName, tostring(Services.Players.LocalPlayer.Character.HumanoidRootPart.CFrame))
+			end})
+
+			Section:Button({Name = "Delete Waypoint", Callback = function()
+				if Selected_Waypoint == nil then return end
+				delfile("SkullFischPC/Waypoints/"..Selected_Waypoint)
+			end})
+
+			Section:Button({Name = "Refresh List", Callback = function()
+				task.spawn(function()
+					task.wait(1.5)
+					local Waypoints = {}
+			
+					for i,v in listfiles("SkullFischPC/Waypoints") do
+						local Slash = tostring(string.gsub(v, [[./SkullFischPC/Waypoints/]], ""))
+						table.insert(Waypoints, Slash)
+					end
+			
+					table.sort(Waypoints, function(A, B)
+						return A<B
+					end)
+			
+					Waypoint_List:Refresh(Waypoints)
+				end)
+			end})
+
+			local Waypoints = {}
+		
+			for i,v in listfiles("SkullFischPC/Waypoints") do
+				local Slash = tostring(string.gsub(v, [[./SkullFischPC/Waypoints/]], ""))
+				table.insert(Waypoints, Slash)
+			end
+
+			table.sort(Waypoints, function(A, B)
+				return A<B
+			end)
+
+			Waypoint_List:Refresh(Waypoints)
+		end
+    end
+
+    do
+        local Section = Pages["Aiming"]:Section({Name = "Teleports", Title = "Teleports", Side = "Right"})
+        local TeleportOptions = {}
+        for Index, Value in Config.Locations do
+            table.insert(TeleportOptions, Index)
+        end
+
+        table.sort(TeleportOptions, function(A, B)
+            return A<B
+        end)
+
+        Section:List({Name = "Teleports", Flag = "Teleports", Options = TeleportOptions, Default = 1, Callback = function(Value)
+            if Value == nil then return end
+            Services.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = Config.Locations[Value]
+        end})
+
+        local Event_List = Section:List({Name = "Events", Flag = "Events", Options = {}, Default = 1, Callback = function(Value)
+            if Value == nil then return end
+            Services.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = Services.Workspace:FindFirstChild(string.lower("Zones")):FindFirstChild(string.lower("Fishing"))[Value].CFrame + Vector3.new(0,75,0)
+        end})
+
+        local Events = {}
+        for Index, Value in Services.Workspace:FindFirstChild(string.lower("Zones")):FindFirstChild(string.lower("Fishing")):GetChildren() do
+            if string.match(tostring(Value):lower(), "ocean") then continue end
+            if Value:FindFirstChildOfClass("Beam") or tostring(Value) == "The Depths - Serpent" then
+                table.insert(Events, tostring(Value))
+            end
+        end
+
+        Event_List:Refresh(Events)
+
+        Services.Workspace:FindFirstChild(string.lower("Zones")):FindFirstChild(string.lower("Fishing")).ChildAdded:Connect(function(Child)
+            table.clear(Events)
+            for Index, Value in Services.Workspace:FindFirstChild(string.lower("Zones")):FindFirstChild(string.lower("Fishing")):GetChildren() do
+                if string.match(tostring(Value):lower(), "ocean") then continue end
+                if Value:FindFirstChildOfClass("Beam") or tostring(Value) == "The Depths - Serpent" then
+                    table.insert(Events, tostring(Value))
                 end
             end
 
-            if #fishList > 0 then
-                local fishNames = table.concat(fishList, ", ")
-                Rayfield:Notify({
-                    Title = "Skull Hub",
-                    Content = "🟩 Inventory found, your 3 fish are: " .. fishNames,
-                    Duration = 3,
-                    Image = "check",
-                })
-            else
-                Rayfield:Notify({
-                    Title = "Skull Hub",
-                    Content = "🟥 Inventory found, but no fish detected.",
-                    Duration = 3,
-                    Image = "circle-x",
-                })
+            Event_List:Refresh(Events)
+        end)
+
+        Services.Workspace:FindFirstChild(string.lower("Zones")):FindFirstChild(string.lower("Fishing")).ChildRemoved:Connect(function(Child)
+            table.clear(Events)
+            for Index, Value in Services.Workspace:FindFirstChild(string.lower("Zones")):FindFirstChild(string.lower("Fishing")):GetChildren() do
+                if string.match(tostring(Value):lower(), "ocean") then continue end
+                if Value:FindFirstChildOfClass("Beam") or tostring(Value) == "The Depths - Serpent" then
+                    table.insert(Events, tostring(Value))
+                end
             end
-        end
-        task.wait(0.1)
+
+            Event_List:Refresh(Events)
+        end)
+
+        local Serpent_Label = Section:Label({Name = "Depth Serpent Active : "..(Serpent_Active == true and "✅" or "❌")})
+
+        task.spawn(function()
+            while task.wait(1) do
+                Serpent_Label:SetText("Depth Serpent Active : "..(Serpent_Active == true and "✅" or Serpent_Active == false and "❌"))
+            end
+        end)
     end
-end
 
---Tabs
-local ma = Window:CreateTab("Farm", "fish")
-local tp = Window:CreateTab("Teleport", "earth")
-local appr = Window:CreateTab("Appraise (Beta)", "badge-dollar-sign")
-local treasure = Window:CreateTab("Treasure", "gem")
-local misc = Window:CreateTab("Misc", "boxes")
-local setting = Window:CreateTab("UI Settings", "settings-2")
+	do
+        local Section = Pages["Aiming"]:Section({Name = "Appraise", Title = "Appraise", Side = "Right", Zindex = -500})
 
---Main
-local Section = ma:CreateSection("🤓 Info")
+		Section:Toggle({Name = "Shiny", Callback = function(state)
+            Config.Appraiser.Shiny = state
+        end})
 
-local infoButton = ma:CreateButton({
-   Name = "Discord",
-   Callback = function()
-      setclipboard("https://discord.gg/NxHT2rSynR")
-      Rayfield:Notify({
-         Title = "Skull Hub",
-         Content = "💀 Copied Skull Hub discord invite link!",
-         Duration = 5,
-         Image = "check",
-      })
-   end,
-})
+		Section:Toggle({Name = "Sparkling", Callback = function(state)
+            Config.Appraiser.Sparkling = state
+        end})
 
-local Section = ma:CreateSection("🎣 Auto Cast")
-local acastmode = ma:CreateDropdown({
-   Name = "🎣 Select Cast Mode",
-   Options = {"🟧 Rage", "🟩 Legit"},
-   CurrentOption = {"🟧 Rage"},
-   MultipleOptions = false,
-   Flag = "acastmode",
-   Callback = function(Options)
-      if Options[1] == "🟧 Rage" then
-         _G.acastmode = true
-      else
-         _G.acastmode = false
-      end
-   end,
-})
+		Section:Toggle({Name = "Mutation", Callback = function(state)
+            Config.Appraiser.Mutation = state
+        end})
 
-local acast = ma:CreateToggle({
-   Name = "🎣 Auto Cast",
-   CurrentValue = false,
-   Flag = "acast",
-   Callback = function(AcastV)
-         _G.acast = AcastV
-         AutoCast()
-   end,
-})
+		Section:Toggle({Name = "Custom Weight", Callback = function(state)
+            Config.Appraiser.CustomWeight = state
+        end})
 
-local freezep = ma:CreateToggle({
-   Name = "❄ Freeze Player",
-   CurrentValue = false,
-   Flag = "freezep",
-   Callback = function(AfreezepV)
-         _G.freezep = AfreezepV
-         FreezePlayer()
-   end,
-})
+		Section:Textbox({Flag = "Weight_Value", Name = "Weight", Callback = function(state)
+            Config.Appraiser.Weight = tonumber(state)
+        end})
 
-local Section = ma:CreateSection("🔀 Auto Shake")
-local ashakespeed = ma:CreateDropdown({
-   Name = "⚡ Select Shake Speed",
-   Options = {"🟩 Fast", "🟨 Normal"},
-   CurrentOption = {"🟩 Fast"},
-   MultipleOptions = false,
-   Flag = "ashakespeed",
-   Callback = function(Options)
-      if Options[1] == "🟩 Fast" then
-         _G.ashakespeed = true
-      else
-         _G.ashakespeed = false
-      end
-   end,
-})
+		Section:List({Name = "Mutation", Flag = "Mutation_Flag", Options = {"Random";"Mythical";"Abyssal";"Lunar";"Midas";"Glossy";"Silver";"Mosaic";"Hexed";"Electric";"Darkened";"Translucent";"Frozen";"Negative";"Albino"}, Default = "Random", Callback = function(Value)
+            if Value == nil then return end
+			Config.Appraiser.WantedMutation = Value
+        end})
 
-local ashakemode = ma:CreateDropdown({
-   Name = "🔀 Select Shake Mode",
-   Options = {"⌨ KeyCode", "🖱 Mouse"},
-   CurrentOption = {"⌨ KeyCode"},
-   MultipleOptions = false,
-   Flag = "ashakemode",
-   Callback = function(Options)
-      if Options[1] == "⌨ KeyCode" then
-         _G.ashakemode = true
-      else
-         _G.ashakemode = false
-      end
-   end,
-})
+		local function CheckFish(Link)
+			local Checks = true
 
-local ashake = ma:CreateToggle({
-   Name = "🔀 Auto Shake",
-   CurrentValue = false,
-   Flag = "ashake",
-   Callback = function(AshakeV)
-         _G.ashake = AshakeV
-         AutoShake()
-   end,
-})
-
-local Section = ma:CreateSection("🔃 Auto Reel")
-local areelmode = ma:CreateDropdown({
-   Name = "🔃 Select Reel Mode",
-   Options = {"🟩 Normal", "🟨 Instant"},
-   CurrentOption = {"🟨 Instant"},
-   MultipleOptions = false,
-   Flag = "areelmode",
-   Callback = function(Options)
-      if Options[1] == "🟩 Normal" then
-         _G.areelmode = true
-      else
-         _G.areelmode = false
-      end
-   end,
-})
-
-local areel = ma:CreateToggle({
-   Name = "🔃 Auto Reel",
-   CurrentValue = false,
-   Flag = "areel",
-   Callback = function(AreelV)
-         _G.areel = AreelV
-         AutoReel()
-   end,
-})
-
-local Section = ma:CreateSection("🔰 Position")
-local tpmode = ma:CreateDropdown({
-   Name = "🌎 Select Teleport Mode",
-   Options = {"🟨 Instant", "🟩 Tween"},
-   CurrentOption = {"🟨 Instant"},
-   MultipleOptions = false,
-   Flag = "tpmode",
-   Callback = function(Options)
-      if Options[1] == "🟨 Instant" then
-         _G.tpmode = true
-      else
-         _G.tpmode = false
-      end
-   end,
-})
-
-local savedPosition = nil
-local savep = ma:CreateButton({
-   Name = "🟩 Save Position",
-   Callback = function()
-      local player = game.Players.LocalPlayer
-      if player and player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
-         savedPosition = player.Character.HumanoidRootPart.Position
-         Rayfield:Notify({
-         Title = "Skull Hub",
-         Content = "🟩 Position saved!",
-         Duration = 3,
-         Image = "check",
-      })
-      else
-         Rayfield:Notify({
-         Title = "Skull Hub",
-         Content = "🟥 Position not saved!",
-         Duration = 3,
-         Image = "circle-x",
-      })
-      end
-   end,
-})
-
-local teleportp = ma:CreateButton({
-   Name = "🟨 Teleport To Saved Position",
-   Callback = function()
-      local player = game.Players.LocalPlayer
-      if player and player.Character and player.Character:FindFirstChild("HumanoidRootPart") and savedPosition then
-         player.Character.HumanoidRootPart.CFrame = CFrame.new(savedPosition)
-         Rayfield:Notify({
-         Title = "Skull Hub",
-         Content = "🟩 Teleported to saved position!",
-         Duration = 3,
-         Image = "check",
-      })
-      else
-         Rayfield:Notify({
-         Title = "Skull Hub",
-         Content = "🟥 No saved positions found!",
-         Duration = 3,
-         Image = "circle-x",
-      })
-      end
-   end,
-})
-
-local Section = ma:CreateSection("🛒 Merchant")
-local smerchant = ma:CreateDropdown({
-   Name = "👨‍🦰 Select Merchant",
-   Options = {
-      "🌲 Marc", "🏖 Matt", "🌞 Max", "❄️ Mike", 
-      "⚛ Cort", "🌊 Maverick", "🌌 Mel", "⛏ Marc (The Depths)",
-      "🦴 Mann"
-   },
-   CurrentOption = "",  
-   MultipleOptions = false,
-   Flag = "smerchant",
-   Callback = function(Options)
-      local selectedMerchant = Options[1]
-      if selectedMerchant == "🌲 Marc" then
-         _G.smerchant = "Marc Merchant"
-      elseif selectedMerchant == "🏖 Matt" then
-         _G.smerchant = "Matt Merchant"
-      elseif selectedMerchant == "🌞 Max" then
-         _G.smerchant = "Max Merchant"
-      elseif selectedMerchant == "❄️ Mike" then
-         _G.smerchant = "Mike Merchant"
-      elseif selectedMerchant == "⚛ Cort" then
-         _G.smerchant = "Cort Merchant"
-      elseif selectedMerchant == "🌊 Maverick" then
-         _G.smerchant = "Maverick Merchant"
-      elseif selectedMerchant == "🌌 Mel" then
-         _G.smerchant = "Mel Merchant"
-      elseif selectedMerchant == "⛏ Marc (The Depths)" then
-         _G.smerchant = "The Depth Merchant"
-      elseif selectedMerchant == "🦴 Mann" then
-         _G.smerchant = "Mann Merchant"
-      end
-   end,
-})
-
-local asell = ma:CreateToggle({
-   Name = "💰 Auto Sell All",
-   CurrentValue = false,
-   Flag = "asell",
-   Callback = function(AsellV)
-         _G.asell = AsellV
-         AutoSell()
-   end,
-})
-
-local asellinhand = ma:CreateToggle({
-   Name = "💰 Auto Sell In Hand",
-   CurrentValue = false,
-   Flag = "asellinhand",
-   Callback = function(AsellihV)
-         _G.asellinhand = AsellihV
-         AutoSellInHand()
-   end,
-})
-
---Teleport
-local Section = tp:CreateSection("🌎 Locations")
-local tlocation = tp:CreateDropdown({
-   Name = "🗺 Select Location",
-   Options = {
-      "🌲 Moosewood", "🏖 Roslit Bay", "🌋 Roslit Volcano",
-      "🍄 Mushgrove Swamp", "🏝 Terrapin Island", "❄️ Snowcap Island",
-      "🌞 Sunstone Island", "🏴‍☠️ Forsaken Shores", "🗿 Statue Of Sovereignty",
-      "⛪ Keepers Altar", "🌪 Vertigo", "🌊 Desolate Deep", "🌌 Desolate Pocket", 
-      "⛏ The Depths", "🌊 Brine Pool", "🌴 Earmark Isle", "🎸 Haddock Rock",
-      "🌉 The Arch", "🌳 Birch Cay", "⚒ Harvesters Spike",
-      "🦖 Ancient Isle", "☄️ Ancient Archives", "🏔️ Northern Summit", "🏔️ Northern Summit (2nd Camp)",
-      "🏔️ Northern Summit (3rd Camp)", "🏔️ Northern Summit (Top)"
-   },
-   CurrentOption = {""},
-   MultipleOptions = false,
-   Flag = "tlocation",
-   Callback = function(Options)
-         local selectedLocation = Options[1]
-         if selectedLocation == "🌲 Moosewood" then
-            teleportPlayer(380, 135, 223)
-         elseif selectedLocation == "🏖 Roslit Bay" then
-            teleportPlayer(-1485, 133, 720)
-         elseif selectedLocation == "🌋 Roslit Volcano" then
-            teleportPlayer(-1910, 165, 317)
-         elseif selectedLocation == "🍄 Mushgrove Swamp" then
-            teleportPlayer(2500, 131, -720)
-         elseif selectedLocation == "🏝 Terrapin Island" then
-            teleportPlayer(-18, 156, 1975)
-         elseif selectedLocation == "❄️ Snowcap Island" then
-            teleportPlayer(2624, 142, 2471)
-         elseif selectedLocation == "🌞 Sunstone Island" then
-            teleportPlayer(-933, 132, -1118)
-         elseif selectedLocation == "🏴‍☠️ Forsaken Shores" then
-            teleportPlayer(-2500, 134, 1540)
-         elseif selectedLocation == "🗿 Statue Of Sovereignty" then
-            teleportPlayer(50, 132, -1009)
-         elseif selectedLocation == "⛪ Keepers Altar" then
-            teleportPlayer(1307, -805, -96)
-         elseif selectedLocation == "🌪 Vertigo" then
-            teleportPlayer(-108, -515, 1065)
-         elseif selectedLocation == "🌊 Desolate Deep" then
-            teleportPlayer(-1000, -245, -2725)
-         elseif selectedLocation == "🌌 Desolate Pocket" then
-            teleportPlayer(-1500, -235, -2856)
-         elseif selectedLocation == "⛏ The Depths" then
-            teleportPlayer(502, -707, 1234)
-         elseif selectedLocation == "🌊 Brine Pool" then
-            teleportPlayer(-1800, -143, -3404)
-         elseif selectedLocation == "🌴 Earmark Isle" then
-            teleportPlayer(1230, 125, 575)
-         elseif selectedLocation == "🎸 Haddock Rock" then
-            teleportPlayer(-570, 182, -413)
-         elseif selectedLocation == "🌉 The Arch" then
-            teleportPlayer(1000, 125, -1250)
-         elseif selectedLocation == "🌳 Birch Cay" then
-            teleportPlayer(1700, 125, -2500)
-         elseif selectedLocation == "⚒ Harvesters Spike" then
-            teleportPlayer(-1257, 139, 1550)
-         elseif selectedLocation == "🦖 Ancient Isle" then
-            teleportPlayer(6064.08, 195.129, 294.897)
-         elseif selectedLocation == "☄️ Ancient Archives" then
-            teleportPlayer(-3155.58, -754.73, 1746.87)
-         elseif selectedLocation == "🏔️ Northern Summit" then
-            teleportPlayer(19540.86, 132.67, 5302.851)
-         elseif selectedLocation == "🏔️ Northern Summit (2nd Camp)" then
-            teleportPlayer(19738.25, 416, 5409)
-         elseif selectedLocation == "🏔️ Northern Summit (3rd Camp)" then
-            teleportPlayer(20248.7148, 730.922119, 5700.44531)
-         elseif selectedLocation == "🏔️ Northern Summit (Top)" then
-            teleportPlayer(19971.7402, 1142.63428, 5571.56543)
-         end
-   end,
-})
-
-local Section = tp:CreateSection("🛠 Items")
-local ttotem = tp:CreateDropdown({
-   Name = "🗿 Select Totem",
-   Options = {
-      "🌄 Sundial", 
-      "🌌 Aurora", 
-      "🌬️ Windset", 
-      "💨 Smokescreen", 
-      "🌪️ Tempest",
-      "🌔 Eclipse",
-      "🪐 Meteor",
-      "❄️ Avalanche",
-      "🌨️ Blizzard"
-   },
-   CurrentOption = {""},
-   MultipleOptions = false,
-   Flag = "ttotem",
-   Callback = function(Options)
-         local selectedTotem = Options[1]
-
-         if selectedTotem == "🌄 Sundial" then
-            teleportPlayer(-1148, 135, -1075)
-         elseif selectedTotem == "🌌 Aurora" then
-            teleportPlayer(-1811, -137, -3282)
-         elseif selectedTotem == "🌬️ Windset" then
-            teleportPlayer(2849, 179, 2702)
-         elseif selectedTotem == "💨 Smokescreen" then
-            teleportPlayer(2789, 140, -625)
-         elseif selectedTotem == "🌪️ Tempest" then
-            teleportPlayer(35, 132.5, 1943)
-         elseif selectedTotem == "🌔 Eclipse" then
-            teleportPlayer(5965.42, 269.604, 851.17)
-         elseif selectedTotem == "🪐 Meteor" then
-            teleportPlayer(-1949.57, 275.35, 229.7)
-         elseif selectedTotem == "❄️ Avalanche" then
-            teleportPlayer(19711.5566, 467.630493, 6055.14355)
-         elseif selectedTotem == "🌨️ Blizzard" then
-            teleportPlayer(20146.2891, 742.95, 5805.228)
-         end
-   end,
-})
-
-local tfishingRods = tp:CreateDropdown({
-   Name = "🎣 Select Fishing Rod",
-   Options = {
-      "🍣 Basic Rods",
-      "🎯 Long Rod",
-      "⚡ Rapid & ⏳ Steady Rods",
-      "🍀 Fortune Rod",
-      "🧲 Magnet Rod", 
-      "🔱 Trident Rod",
-      "🌌 Aurora Rod", 
-      "🌙 Nocturnal Rod",
-      "🔍 Kings Rod",
-      "🛠️ Reinforced Rod",
-      "🏴‍☠️ Scurvy Rod",
-      "🏮 Rod Of The Depths",
-      "🐦‍🔥 Phoenix Rod",
-      "🍬 Candy Cane Rod",
-      "🧊 Arctic Rod",
-      "❄️ Avalanche Rod",
-      "🗻 Summit Rod"
-   },
-   CurrentOption = {""},
-   MultipleOptions = false,
-   Flag = "tfishingRods",
-   Callback = function(Options)
-         local selectedRod = Options[1]
-
-         if selectedRod == "🍣 Basic Rods" then
-            teleportPlayer(454, 151, 239)
-         elseif selectedRod == "🎯 Long Rod" then
-            teleportPlayer(486, 175, 151)
-         elseif selectedRod == "⚡ Rapid & ⏳ Steady Rods" then
-            teleportPlayer(-1510, 142, 761)
-         elseif selectedRod == "🍀 Fortune Rod" then
-            teleportPlayer(-1523, 142, 770)
-         elseif selectedRod == "🧲 Magnet Rod" then
-            teleportPlayer(-200, 133, 1930)
-         elseif selectedRod == "🔱 Trident Rod" then
-            teleportPlayer(-1484, -226, -2201)
-         elseif selectedRod == "🌌 Aurora Rod" then
-            teleportPlayer(-141, -512, 1145)
-         elseif selectedRod == "🌙 Nocturnal Rod" then
-            teleportPlayer(-141, -512, 1145)
-         elseif selectedRod == "🔍 Kings Rod" then
-            teleportPlayer(1381, -808, -302)
-         elseif selectedRod == "🛠️ Reinforced Rod" then
-            teleportPlayer(-989, -243, -2693)
-         elseif selectedRod == "🏴‍☠️ Scurvy Rod" then
-            teleportPlayer(-2825, 215, 1512)
-         elseif selectedRod == "🏮 Rod Of The Depths" then
-            teleportPlayer(1703, -903, 1443)
-         elseif selectedRod == "🐦‍🔥 Phoenix Rod" then
-            teleportPlayer(5965.42, 269.604, 851.17)
-         elseif selectedRod == "🍬 Candy Cane Rod" then
-            teleportPlayer(-187.87, 366.9, -9450.28)
-         elseif selectedRod == "🧊 Arctic Rod" then
-            teleportPlayer(19578.335, 132.67, 5304.58)
-         elseif selectedRod == "❄️ Avalanche Rod" then
-            teleportPlayer(19772.1895, 415.437, 5417.148)
-         elseif selectedRod == "🗻 Summit Rod" then
-            teleportPlayer(20211.17, 736.668, 5709.92)
-         end
-   end,
-})
-
-local titems = tp:CreateDropdown({
-   Name = "📦 Select Item",
-   Options = {
-      "📍 GPS", 
-      "🔘 Fish Radar", 
-      "🤿 Diving Gear", 
-      "🐟 Bait Crate",
-      "🦈 Quality Bait Crate", 
-      "🦀 Crab Cage",
-      "🈳 Tidebreaker",
-      "⚓ Coral Geode",
-      "👣 Flippers",
-      "🪂 Glider",
-      "🪂 Advanced Glider",
-      "🎺 Conception Conch",
-      "⛏️ Pickaxe",
-      "🧥 Winter Cloak",
-      "🎯 Basic Oxygen Tank",
-      "🎯 Beginner Oxygen Tank",
-      "🎯 Intermediate Oxygen Tank",
-      "🎯 Advanced Oxygen Tank"
-   },
-   CurrentOption = {""},
-   MultipleOptions = false,
-   Flag = "titems",
-   Callback = function(Options)
-         local selectedItem = Options[1]
-
-         if selectedItem == "📍 GPS" then
-            teleportPlayer(515, 151, 285)
-         elseif selectedItem == "🔘 Fish Radar" then
-            teleportPlayer(365, 136, 275)
-         elseif selectedItem == "🤿 Diving Gear" then
-            teleportPlayer(370, 136, 250)
-         elseif selectedItem == "🐟 Bait Crate" then
-            teleportPlayer(384, 137, 334)
-         elseif selectedItem == "🦈 Quality Bait Crate" then
-            teleportPlayer(-174, 144, 1932)
-         elseif selectedItem == "🦀 Crab Cage" then
-            teleportPlayer(476, 151, 231)
-         elseif selectedItem == "🈳 Tidebreaker" then
-            teleportPlayer(-1640, -214, -2851.11)
-         elseif selectedItem == "⚓ Coral Geode" then
-            teleportPlayer(-1640, -214, -2851.12)
-         elseif selectedItem == "👣 Flippers" then
-            teleportPlayer(-1640, -214, -2851.13)
-         elseif selectedItem == "🪂 Glider" then
-            teleportPlayer(-1640, -214, -2851.14)
-         elseif selectedItem == "🪂 Advanced Glider" then
-            teleportPlayer(19938.8, 1142.63, 5546.2)
-         elseif selectedItem == "🎺 Conception Conch" then
-            teleportPlayer(-1632, -214, -2862.15)
-         elseif selectedItem == "🎯 Basic Oxygen Tank" then
-            teleportPlayer(19521.6875, 132.67, 5325.5)
-         elseif selectedItem == "🎯 Beginner Oxygen Tank" then
-            teleportPlayer(19780.28, 415.437, 5384.82)
-         elseif selectedItem == "⛏️ Pickaxe" then
-            teleportPlayer(19779.5566, 415.437042, 5391.23633)
-         elseif selectedItem == "🎯 Intermediate Oxygen Tank" then
-            teleportPlayer(20216.1973, 736.66, 5713)
-         elseif selectedItem == "🧥 Winter Cloak" then
-            teleportPlayer(20168.2773, 780.802429, 5724.7251)
-         elseif selectedItem == "🎯 Advanced Oxygen Tank" then
-            teleportPlayer(19950.4, 1142.63, 5541.46)
-         end
-   end,
-})
-
-local tfragments = tp:CreateDropdown({
-   Name = "🛡️ Select Fragment",
-   Options = {
-      "💚 Earth", 
-      "🌊 Deep Sea",
-      "☀️ Solar"
-   },
-   CurrentOption = {""},
-   MultipleOptions = false,
-   Flag = "titems",
-   Callback = function(Options)
-         local selectedFragment = Options[1]
-
-         if selectedFragment == "💚 Earth" then
-            teleportPlayer(5965.42, 269.604, 851.17)
-         elseif selectedFragment == "🌊 Deep Sea" then
-            teleportPlayer(5842.72656, 74.9356308, 383.082825)
-         elseif selectedFragment == "☀️ Solar" then
-            teleportPlayer(6073.41162, 443.945801, 685.227966)
-         end
-   end,
-})
-
-local Divider = tp:CreateDivider()
-
---Appraise
-local Section = appr:CreateSection("🐟 Main")
-local apprmutation = appr:CreateDropdown({
-   Name = "🧬 Select Mutation",
-   Options = {
-      "🌀 Sunken",
-      "🌌 Aurora",
-      "🌟 Mythical",
-      "☢️ Nuclear",
-      "🌊 Abyssal",
-      "🏛️ Atlantean",
-      "🌕 Lunar",
-      "💰 Midas",
-      "✨ Glossy",
-      "🥈 Silver",
-      "🎨 Mosaic",
-      "🔮 Hexed",
-      "⚡ Electric",
-      "🌑 Darkened",
-      "👻 Translucent",
-      "❄️ Frozen",
-      "⚫ Negative",
-      "🤍 Albino"
-   },
-   CurrentOption = {""},
-   MultipleOptions = false,
-   Flag = "apprmutation",
-   Callback = function(Options)
-      local selectedMutation = Options[1]
-      _G.apprmutation = selectedMutation:gsub(".* ", "")
-         Rayfield:Notify({
-         Title = "🟨 Skull hub",
-         Content = "Mutation selected: " .._G.apprmutation,
-         Duration = 3,
-         Image = "check",
-      })
-   end,
-})
-
-local cweightappr = appr:CreateInput({
-   Name = "🏋️‍♀️ Input Weight",
-   CurrentValue = "",
-   PlaceholderText = "Input Weight",
-   RemoveTextAfterFocusLost = false,
-   Flag = "cweightappr",
-   Callback = function(Text)
-         _G.apprweight = Text
-         Rayfield:Notify({
-         Title = "🟨 Skull Hub",
-         Content = "Weight inputed: " .._G.apprweight,
-         Duration = 3,
-         Image = "check",
-      })
-   end,
-})
-local Divider = appr:CreateDivider()
-
-local aappr = appr:CreateToggle({
-   Name = "🔎 Auto Appraise",
-   CurrentValue = false,
-   Flag = "aappr",
-   Callback = function(AapprV)
-         _G.aappr = AapprV
-         AutoAppraise()
-   end,
-})
-
-local Section = appr:CreateSection("💪 Uses")
-local ubig = appr:CreateToggle({
-   Name = "💪 Use Big",
-   CurrentValue = false,
-   Flag = "ubig",
-   Callback = function(UbigV)
-         _G.apprbig = UbigV
-   end,
-})
-
-local ugiant = appr:CreateToggle({
-   Name = "🌟 Use Giant",
-   CurrentValue = false,
-   Flag = "ugiant",
-   Callback = function(UgiantV)
-         _G.apprgiant = UgiantV
-   end,
-})
-
-local usparkling = appr:CreateToggle({
-   Name = "✨ Use Sparkling",
-   CurrentValue = false,
-   Flag = "usparkling",
-   Callback = function(UsparklingV)
-         _G.apprsparkling = UsparklingV
-   end,
-})
-
-local ushiny = appr:CreateToggle({
-   Name = "💎 Use Shiny",
-   CurrentValue = false,
-   Flag = "ushiny",
-   Callback = function(UshinyV)
-         _G.apprshiny = UshinyV
-   end,
-})
-
---Treasure
-local Section = treasure:CreateSection("💎 Treasure")
-
-local RMap = treasure:CreateButton({
-   Name = "🗺️ Repair Maps (all you have)",
-   Callback = function()
-      autoRepairMap()
-   end,
-})
-
-local Ochest = treasure:CreateButton({
-   Name = "💎 Open Chests (all you have)",
-   Callback = function()
-      openChests()
-   end,
-})
-
---Misc
-local Section = misc:CreateSection("🎮 Codes")
-local x2Code = {
-   "RFG",
-   "NorthernExpedition",
-   "MERRYFISCHMAS"
-}
-local RedeemBut = misc:CreateButton({
-   Name = "🎮 Redeem All Codes",
-   Callback = function()
-      function RedeemCode(value)
-         game:GetService("ReplicatedStorage").events.runcode:FireServer(value)
-      end
-      for i,v in pairs(x2Code) do
-         RedeemCode(v)
-      end
-      Rayfield:Notify({
-         Title = "Skull Hub",
-         Content = "💀 Redeemed all codes!",
-         Duration = 5,
-         Image = "check",
-      })
-   end,
-})
-
-local Section = misc:CreateSection("👁 Visual")
-local espisonadet = misc:CreateToggle({
-   Name = "👁 Esp Isonade",
-   CurrentValue = false,
-   Flag = "espisonadet",
-   Callback = function(espisonadeV)
-         _G.espisonade = espisonadeV
-         if _G.espisonade then
-            Espisonade()
-         else
-            DelEspisonade()
-         end
-   end,
-})
-
-local pnivision = misc:CreateToggle({
-   Name = "👁 Night Vision",
-   CurrentValue = false,
-   Flag = "NvF",
-   Callback = function(Value)
-      if Value then
-			if game:GetService("Lighting"):FindFirstChild("Sky") then
-				game:GetService("Lighting"):FindFirstChild("Sky").Parent = game:GetService("Lighting").bloom
+			if Config.Appraiser.Mutation then 
+				if Link:FindFirstChild("Mutation") then
+					if Config.Appraiser.WantedMutation == "Random" then
+						Checks = true
+					else
+						Checks = Link:FindFirstChild("Mutation").Value == Config.Appraiser.WantedMutation
+					end
+				else
+					Checks = false
+				end
 			end
-		else
-			if game:GetService("Lighting").bloom:FindFirstChild("Sky") then
-				game:GetService("Lighting").bloom:FindFirstChild("Sky").Parent = game:GetService("Lighting")
-			end
+
+			if Checks == false then return false end
+			if Config.Appraiser.Sparkling then Checks = Link:FindFirstChild("Sparkling") and true or not Link:FindFirstChild("Sparkling") and false end
+			if Checks == false then return false end
+			if Config.Appraiser.Shiny then Checks = Link:FindFirstChild("Shiny") and true or not Link:FindFirstChild("Shiny") and false end
+			if Checks == false then return false end
+			if Config.Appraiser.CustomWeight then Checks = Link.Weight.Value >= Config.Appraiser.Weight end
+			
+
+			return Checks
 		end
-   end,
-})
 
-local Section = misc:CreateSection("🙍‍♂️ Local Player")
+		local StopAppraising = false;
+		Section:Button({Name = "Start Appraising (Hold Fish)", Callback = function()
+			task.spawn(function()
+				local Fish = tostring(Services.Players.LocalPlayer.Character:FindFirstChildOfClass("Tool"))
 
-local antiidlev = misc:CreateToggle({
-   Name = "👺 Anti Idle",
-   CurrentValue = true,
-   Flag = "didle",
-   Callback = function(Value)
-      local vu = game:GetService("VirtualUser")
-      repeat wait() until game:IsLoaded() 
-      game:GetService("Players").LocalPlayer.Idled:connect(function()
-      game:GetService("VirtualUser"):ClickButton2(Vector2.new())
-      vu:Button2Down(Vector2.new(0,0),workspace.CurrentCamera.CFrame)
-      wait(1)
-      vu:Button2Up(Vector2.new(0,0),workspace.CurrentCamera.CFrame)
-      end)
-   end,
-})
+				if Fish == "nil" then return end
 
-local doxygen = misc:CreateToggle({
-   Name = "🛑 Disable Oxygen",
-   CurrentValue = false,
-   Flag = "doxygen",
-   Callback = function(AdoxygenV)
-      for _, player in pairs(game.Players:GetPlayers()) do
-         local oxygen = player.Character and player.Character:FindFirstChild("client") and player.Character.client:FindFirstChild("oxygen")
-         if oxygen then
-            oxygen.Enabled = not AdoxygenV
-         end
-      end
-   end,
-})
-doxygen:Set(true)
+				while task.wait(.1) do
+					if Services.Players.LocalPlayer.Backpack:FindFirstChild(Fish) then
+						Services.Players.LocalPlayer.Character.Humanoid:EquipTool(Services.Players.LocalPlayer.Backpack:FindFirstChild(Fish))
+					end
+					
+					local Temp_Fish;
 
-local dtemperature = misc:CreateToggle({
-   Name = "🟠 Disable Temperature",
-   CurrentValue = false,
-   Flag = "dtemperature",
-   Callback = function(Atemperature)
-      for _, player in pairs(game.Players:GetPlayers()) do
-         local Temperature = player.Character and player.Character:FindFirstChild("client") and player.Character.client:FindFirstChild("temperature")
-         if Temperature then
-            Temperature.Enabled = not Atemperature
-         end
-      end
-   end,
-})
-dtemperature:Set(true)
+					pcall(function()
+						Temp_Fish = Services.Players.LocalPlayer.Character:FindFirstChild(Fish)
+					end)
 
-local dpeaks = misc:CreateToggle({
-   Name = "🔵 Disable Oxygen (Peaks)",
-   CurrentValue = false,
-   Flag = "dpeaks",
-   Callback = function(Apeaks)
-      for _, player in pairs(game.Players:GetPlayers()) do
-         local oxygenp = player.Character and player.Character:FindFirstChild("client") and player.Character.client:FindFirstChild("oxygen(peaks)")
-         if oxygenp then
-            oxygenp.Enabled = not Apeaks
-         end
-      end
-   end,
-})
-dpeaks:Set(true)
+					if not Temp_Fish then continue end
+					if not Temp_Fish:FindFirstChild(string.lower("Link")) then continue end
 
-local NoclipT = misc:CreateToggle({
-   Name = "👻 Noclip",
-   CurrentValue = false,
-   Flag = "pnoclip",
-   Callback = function(ToggleState)
-      NoclipEnabled = ToggleState
-      while NoclipEnabled do
-        NoclipFunction()
-        task.wait()
-      end
-      for _, part in ipairs(game.Players.LocalPlayer.Character:GetDescendants()) do
-        if part:IsA("BasePart") and part.CanCollide == false then
-            part.CanCollide = true
-        end
-      end
-   end,
-})
+					local Link = Temp_Fish:FindFirstChild(string.lower("Link")).Value
 
-local pwalkwater = misc:CreateToggle({
-   Name = "🌊 Walk On Ocean",
-   CurrentValue = false,
-   Flag = "wotF",
-   Callback = function(Value)
-      for i,v in pairs(workspace.zones.fishing:GetChildren()) do
-			if v.Name == "Ocean" then
-				v.CanCollide = Value
-         elseif v.Name == "Forsaken Shores Ocean" then
-            v.CanCollide = Value
-         elseif v.Name == "Deep Ocean" then
-            v.CanCollide = Value
-         elseif v.Name == "Ancient Isle Ocean" then
-            v.CanCollide = Value
-         elseif v.Name == "Moosewood Ocean" then
-            v.CanCollide = Value
-         elseif v.Name == "Moosewood Ocean Mythical" then
-            v.CanCollide = Value
-         elseif v.Name == "Roslit Bay Ocean" then
-            v.CanCollide = value
-         elseif v.Name == "Scallop Ocean" then
-            v.CanCollide = Value
-         elseif v.Name == "Snowcap Ocean" then
-            v.CanCollide = Value
+					if CheckFish(Link) or StopAppraising then
+						break
+					end
+				
+					pcall(function()
+						task.spawn(function()
+							pcall(function()
+								Services.Workspace:FindFirstChild(string.lower("World")):FindFirstChild(string.lower("NPCS")):FindFirstChild("Appraiser"):FindFirstChild(string.lower("Appraiser")):FindFirstChild(string.lower("Appraise")):InvokeServer()
+							end)
+						end)
+					end)
+				end
+			end)
+		end})
+
+		Section:Button({Name = "Stop Appraising", Callback = function()
+			task.spawn(function()
+				StopAppraising = true;
+				task.wait(1)
+				StopAppraising = false;
+			end)
+		end})
+
+		Section:Button({Name = "TP To Appraiser", Callback = function()
+			task.spawn(function()
+				teleportPlayer(447.278, 150.529, 207.458)
+			end)
+		end})
+    end
+
+	do
+        local Section = Pages["Misc"]:Section({Name = "Local Player", Side = "Left"})
+
+		Section:Toggle({Name = "Disable Oxygen", Callback = function(AdoxygenV)
+            for _, player in pairs(game.Players:GetPlayers()) do
+				local oxygen = player.Character and player.Character:FindFirstChild("client") and player.Character.client:FindFirstChild("oxygen")
+				if oxygen then
+				   oxygen.Enabled = not AdoxygenV
+				end
 			end
-		end
-   end,
-})
+        end})
 
-local Divider = misc:CreateDivider()
+		Section:Toggle({Name = "Disable Oxygen (Peaks)", Callback = function(Apeaks)
+            for _, player in pairs(game.Players:GetPlayers()) do
+				local oxygenp = player.Character and player.Character:FindFirstChild("client") and player.Character.client:FindFirstChild("oxygen(peaks)")
+				if oxygenp then
+				   oxygenp.Enabled = not Apeaks
+				end
+			end
+        end})
 
-local pspeed = misc:CreateSlider({
-   Name = "🏃‍♂️ Player Speed",
-   Range = {16, 150},
-   Increment = 1,
-   Suffix = "Speed",
-   CurrentValue = 16,
-   Flag = "pspeed",
-   Callback = function(pseedValue)
-      local player = game.Players.LocalPlayer
-      if player and player.Character then
-         local humanoid = player.Character:WaitForChild("Humanoid")
-         humanoid.WalkSpeed = pseedValue
-         _G.plspeed = pseedValue
-      end
-   end,
-})
+		Section:Toggle({Name = "Disable Temperature", Callback = function(Atemperature)
+            for _, player in pairs(game.Players:GetPlayers()) do
+				local Temperature = player.Character and player.Character:FindFirstChild("client") and player.Character.client:FindFirstChild("temperature")
+				if Temperature then
+				   Temperature.Enabled = not Atemperature
+				end
+			end
+        end})
 
-local pjumpPower = misc:CreateSlider({
-   Name = "🦘 Jump Power",
-   Range = {50, 150},
-   Increment = 1,
-   Suffix = "Power",
-   CurrentValue = 50,
-   Flag = "pjumpPower",
-   Callback = function(pjumpPowerValue)
-      local player = game.Players.LocalPlayer
-      if player and player.Character then
-         local humanoid = player.Character:WaitForChild("Humanoid")
-         humanoid.JumpPower = pjumpPowerValue
-         _G.pljump = pjumpPowerValue
-      end
-   end,
-})
+		Section:Toggle({Name = "Night Vision", Callback = function(Value)
+            if Value then
+				if game:GetService("Lighting"):FindFirstChild("Sky") then
+					game:GetService("Lighting"):FindFirstChild("Sky").Parent = game:GetService("Lighting").bloom
+				end
+			else
+				if game:GetService("Lighting").bloom:FindFirstChild("Sky") then
+					game:GetService("Lighting").bloom:FindFirstChild("Sky").Parent = game:GetService("Lighting")
+				end
+			end
+        end})
 
-local pfov = misc:CreateSlider({
-   Name = "🔭 Field of View",
-   Range = {70, 120},
-   Increment = 1,
-   Suffix = "FOV",
-   CurrentValue = 70,
-   Flag = "pfov",
-   Callback = function(pfovValue)
-      local player = game.Players.LocalPlayer
-      if player and player.Character then
-         local camera = game:GetService("Workspace").CurrentCamera
-         camera.FieldOfView = pfovValue
-      end
-   end,
-})
+		Section:Toggle({Name = "Noclip", Callback = function(ToggleState)
+            NoclipEnabled = ToggleState
+            while NoclipEnabled do
+                NoclipFunction()
+                task.wait()
+            end
+            for _, part in ipairs(game.Players.LocalPlayer.Character:GetDescendants()) do
+                if part:IsA("BasePart") and part.CanCollide == false then
+                    part.CanCollide = true
+                end
+            end
+        end})
 
-local section = misc:CreateSection("🧩 Others")
+		Section:Toggle({Name = "ESP Isonade", Callback = function(espisonadeV)
+            _G.espisonade = espisonadeV
+            if _G.espisonade then
+                Espisonade()
+            else
+                DelEspisonade()
+            end
+        end})
 
-local HopSV = misc:CreateButton({
-   Name = "🕊️ Hop Server",
-   Callback = function()
-      local FullServer = FullServer or false
+        local antiafk_enabled = false;
 
-	local Http = game:GetService("HttpService")
-	local Api = "https://games.roblox.com/v1/games/"
+        Section:Toggle({Name = "Anti Idle", Callback = function(state)
+            if antiafk_enabled == false then
+				if state then
+					task.spawn(function()
+						while true do
+							local GC = getconnections or get_signal_cons
+							if GC and (not Solara) and (not Xeno) then
+								for i,v in pairs(GC(Services.Players.LocalPlayer.Idled)) do
+									if v["Disable"] then
+										v["Disable"](v)
+									elseif v["Disconnect"] then
+										v["Disconnect"](v)
+									end
+								end
+							else
+								Services.Players.LocalPlayer.Idled:Connect(function()
+									Services.VirtualUser:CaptureController()
+									Services.VirtualUser:ClickButton2(Vector2.new())
+								end)
+							end
+							
+							task.wait(300)
+						end
+					end)
+				end
+            end
+            if state then
+                antiafk_enabled = true;
+                Real_AFK.Parent = Fake_Folder
+                Fake_AFK.Parent = Services.ReplicatedStorage.events
+            else
+                Real_AFK.Parent = Services.ReplicatedStorage.events
+                Fake_AFK.Parent = Fake_Folder
+            end
+        end})
 
-	local _place = game.PlaceId
-	local _servers = Api.._place.."/servers/Public?sortOrder=Asc&limit=100"
-	local ListServers = function (cursor)
-		local Raw = game:HttpGet(_servers .. ((cursor and "&cursor="..cursor) or ""))
-		return Http:JSONDecode(Raw)
-	end
+        Section:Toggle({Name = "Click Teleport", Callback = function(state)
+            Config.Misc.ClickTeleport = state
+        end})
 
-	local Server, Next; repeat
-		local Servers = ListServers(Next)
-		Server = Servers.data[1]
-		Next = Servers.nextPageCursor
-	until Server
-	repeat
-		if not FullServer then
-			game:GetService("TeleportService"):TeleportToPlaceInstance(_place,Server.id,game.Players.LocalPlayer)
-		else
-			if request then
-				local servers = {}
-				local req = request(
-					{
-						Url = string.format("https://games.roblox.com/v1/games/%d/servers/Public?sortOrder=Desc&limit=100&excludeFullGames=true", game.PlaceId)
-					}
-				).Body;
-				local body = game:GetService("HttpService"):JSONDecode(req)
-				if body and body.data then
-					for i, v in next, body.data do
-						if type(v) == "table" and tonumber(v.playing) and tonumber(v.maxPlayers) and v.playing < v.maxPlayers and v.id ~= game.JobId then
-							table.insert(servers, 1, v.id)
+        Section:Keybind({Name = "Teleport Key", Flag = "Teleport_Key", Ignore = true, UseKey = true, Default = Enum.KeyCode.LeftControl, Callback = function(State) Config.Misc.TeleportBind = State end})
+    end
+
+	do
+        local Section = Pages["Misc"]:Section({Name = "Servers", Side = "Left", Zindex = -1000})
+
+		Section:Button({Name = "Server Hop", Callback = function()
+			task.spawn(function()
+				local httprequest = request or http_request
+				if httprequest then
+					local servers = {}
+					local req = httprequest({Url = string.format("https://games.roblox.com/v1/games/%d/servers/Public?sortOrder=Desc&limit=100&excludeFullGames=true", game.PlaceId)})
+					local body = Services.HttpService:JSONDecode(req.Body)
+				
+					if body and body.data then
+						for i, v in next, body.data do
+							if type(v) == "table" and tonumber(v.playing) and tonumber(v.maxPlayers) and v.playing < v.maxPlayers and v.id ~= game.JobId then
+								table.insert(servers, 1, v.id)
+							end
 						end
 					end
+				
+					if #servers > 0 then
+						Services.TeleportService:TeleportToPlaceInstance(game.PlaceId, servers[math.random(1, #servers)], Services.Players.LocalPlayer)
+					else
+						return Notifications:Notification("[🐟] Couldnt Find Server!", 7.5, Library.Accent, false)
+					end
 				end
-				if #servers > 0 then
-					game:GetService("TeleportService"):TeleportToPlaceInstance(game.PlaceId, servers[math.random(1, #servers)], game.Players.LocalPlayer)
-				else
-					return "Couldn't find a server."
-				end
-			end
-		end
-		wait()
-	until game.PlaceId ~= game.PlaceId
-   end,
-})
+			end)
+		end})
+    end
 
---UiSettings
-local Section = setting:CreateSection("⚙ UI Setting")
-local themes = setting:CreateDropdown({
-   Name = "🎨 Select Theme",
-   Options = {
-      "🌟 Default", 
-      "✨ Amber Glow", 
-      "💜 Amethyst", 
-      "🌸 Bloom", 
-      "🌌 Dark Blue", 
-      "🍃 Green", 
-      "🌞 Light", 
-      "🌊 Ocean", 
-      "🌿 Serenity"
-   },
-   CurrentOption = {""},
-   MultipleOptions = false,
-   Flag = "themes",
-   Callback = function(Options)
-         local selectedTheme = Options[1]
-         if selectedTheme == "🌟 Default" then
-            Window.ModifyTheme('Default')
-         elseif selectedTheme == "✨ Amber Glow" then
-            Window.ModifyTheme('AmberGlow')
-         elseif selectedTheme == "💜 Amethyst" then
-            Window.ModifyTheme('Amethyst')
-         elseif selectedTheme == "🌸 Bloom" then
-            Window.ModifyTheme('Bloom')
-         elseif selectedTheme == "🌌 Dark Blue" then
-            Window.ModifyTheme('DarkBlue')
-         elseif selectedTheme == "🍃 Green" then
-            Window.ModifyTheme('Green')
-         elseif selectedTheme == "🌞 Light" then
-            Window.ModifyTheme('Light')
-         elseif selectedTheme == "🌊 Ocean" then
-            Window.ModifyTheme('Ocean')
-         elseif selectedTheme == "🌿 Serenity" then
-            Window.ModifyTheme('Serenity')
-         end
-   end,
-})
+	do -- Treasure
+		local Section = Pages["Misc"]:Section({Name = "Treasure", Side = "Right"})
 
-Rayfield:Notify({
-   Title = "Skull Hub",
-   Content = "🟩 Script loaded successfully!",
-   Duration = 5,
-   Image = "skull",
-})
+		Section:Button({Name = "Repair Maps (all you have)", Callback = function()
+			task.spawn(function()
+				autoRepairMap()
+			end)
+		end})
+
+		Section:Button({Name = "Open Chests (all you have)", Callback = function()
+			task.spawn(function()
+				openChests()	
+			end)
+		end})
+	end
+
+	do -- Settings
+		local Config = Pages["Settings"]:Section({Name = "Config"})
+		local ConfigList = Config:List({Name = "Config", Flag = "SettingConfigurationList", Options = {}})
+		Config:Textbox({Flag = "SettingsConfigurationName", Name = "Config Name"})
+		Config:Button({Name = "Save"})
+		Config:Button({Name = "Load"})
+		Config:Button({Name = "Delete"})
+		Config:Button({Name = "Refresh"})
+		Config:Keybind({Name = "Menu Key", Flag = "MenuKey", Ignore = true, UseKey = true, Default = Enum.KeyCode.RightControl, Callback = function(State) Library.UIKey = State end})
+	end
+end
+
+Notifications:Notification("[🐟] Fisch | Skull Hub", 20, Library.Accent, false)
+Notifications:Notification("By hungquan99", 20, Library.Accent, false)
