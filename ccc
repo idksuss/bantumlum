@@ -43,12 +43,7 @@ local function Espisonade()
 				local coords = string.format("X: %.2f, Y: %.2f, Z: %.2f", position.X, position.Y, position.Z)
  
 				if not notifiedIsonades[isonade] then
-				   Rayfield:Notify({
-					  Title = "🎊 Event",
-					  Content = "Isonade zone at " .. coords,
-					  Duration = 3,
-					  Image = "flag",
-				   })
+				   Notifications:Notification("Isonade zone at " .. coords, 20, Library.Accent, false)
 				   notifiedIsonades[isonade] = true
 				end
 			 end
@@ -990,6 +985,40 @@ do
 
 	do
         local Section = Pages["Misc"]:Section({Name = "Local Player", Side = "Left"})
+
+		local workspace = game:GetService("Workspace")
+
+		if not workspace:FindFirstChild("Skull Hub Fisch Folder") then
+		   local folder = Instance.new("Folder", game:GetService("Workspace"))
+		   folder.Name = "Skull Hub Fisch Folder"
+		
+		   local part = Instance.new("Part", folder)
+		   part.Name = "Jesus"
+		   part.Size = Vector3.new(500, 0.5, 500)
+		   part.Anchored = true
+		   part.Transparency = 1
+		   part.Position = Vector3.new(character.HumanoidRootPart.CFrame.X, 126.5, character.HumanoidRootPart.CFrame.Z)
+		end
+
+		Section:Toggle({Name = "Walk On Water", Callback = function(Value)
+            getgenv().walkonwatertoggle = Value
+            spawn(function()
+            while wait(0.01) do
+               if getgenv().walkonwatertoggle then
+                     local player = game.Players.LocalPlayer
+                     local character = player.Character or player.CharacterAdded:Wait()
+                     local humanoidRootPart = character:WaitForChild("HumanoidRootPart")
+                     local folder = game:GetService("Workspace"):FindFirstChild("Skull Hub Fisch Folder")
+                     
+                     if folder then
+                           folder:FindFirstChild("Jesus").Position = Vector3.new(humanoidRootPart.Position.X, 126.5, humanoidRootPart.Position.Z)
+                     end
+               end
+      
+               game:GetService("Workspace"):FindFirstChild("Skull Hub Fisch Folder"):FindFirstChild("Jesus").CanCollide = getgenv().walkonwatertoggle
+            end
+            end)
+        end})
 
 		Section:Toggle({Name = "Disable Oxygen", Callback = function(AdoxygenV)
             for _, player in pairs(game.Players:GetPlayers()) do
