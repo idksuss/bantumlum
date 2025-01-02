@@ -515,7 +515,9 @@ do
 		local x2Code = {
 			"RFG",
 			"NorthernExpedition",
-			"MERRYFISCHMAS"
+			"MERRYFISCHMAS",
+			"NewYear",
+   			"1BVisits"
 		 }
 
 		Section:Button({Name = "Redeem All Codes", Callback = function()
